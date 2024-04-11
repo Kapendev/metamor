@@ -1,0 +1,40 @@
+{
+	"name" : "metamor",
+	"description" : "A cute visual novel made with the D programming language.",
+	"authors" : ["alex"],
+	"copyright" : "Copyright © 2024, alex",
+	"license" : "MIT",
+	"dependencies" : {},
+	"configurations": [
+		{
+			"name": "linux_app",
+			"targetType": "executable",
+			"platforms": [
+				"linux"
+			],
+			"libs": [
+				"raylib",
+				"GL",
+				"m",
+				"pthread",
+				"dl",
+				"rt",
+				"X11"
+			],
+			"lflags": [
+				"-L.",
+				"-rpath=$$ORIGIN"
+			]
+		},
+		{
+			"name": "windows_app",
+			"targetType": "executable",
+			"platforms": [
+				"windows"
+			],
+			"libs": [
+				"raylibdll"
+			]
+		}
+	]
+}

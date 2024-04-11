@@ -1,0 +1,389 @@
+* start
+
+$ showBackground none
+$ hideAllActors
+
+# @ debug
+
+> none
+| [ A Short Metamorphosis ]
+| [ Quit: ESC | Fullscreen: F11 ]
+| ...
+
+$ showBackground room
+
+> chloe
+| A soft lamplight paints the room.
+| The clock on the wall reads 11:32 PM.
+| And I am staring intently.
+| Staring at a strange pulsating egg.
+| Nestled in my potted cactus.
+| Did that cactus just lay an egg?
+| That's... impossible.
+| Right?
+
+$ showBackground none
+
+^ Yes. ^ No.
+*
+*
+
+$ showBackground room
+
+> chloe
+| Unless...
+| Maybe it's a magic cactus?
+| Like the one in that old book I read.
+
+$ showBackground none
+
+^ Yes. ^ No. ^ Maybe.
+*
+*
+*
+
+$ showBackground room
+
+> chloe
+| Okay...
+| Maybe a magic cactus is a stretch.
+| But this is seriously weird.
+| Maybe it's some kind of alien egg?
+| Like from those sci-fi movies.
+
+$ showBackground none
+
+^ Yes. ^ Maybe.
+*
+*
+
+$ showBackground room
+
+> chloe
+| Hmm...
+| ...
+| I want to poke it.
+| What's the worst that could happen?
+| A tiny cactus monster pops out?
+
+$ showBackground none
+
+^ Please no. ^ Please no. ^ Please no. ^ Please no.
+*
+*
+*
+*
+
+$ showBackground room
+
+| ...
+| Nah, that's probably not it.
+| But still... maybe I shouldn't.
+| Maybe I should leave it alone.
+| See if it hatches on its own.
+| Then I can be all scientific about it.
+| Like on those nature documentaries.
+| "And here we see..."
+| "The rare cactus creature."
+| "In its natural habitat... my bedroom."
+| ...
+| This is why I shouldn't eat so much candy.
+| My brain is officially fried.
+| Maybe I should just... sleep on it.
+| Literally.
+
+$ showBackground none
+
+* debug
+
+> none
+| *...*
+| *The egg wiggles slightly*
+
+$ showBackground room
+
+> chloe
+| ...
+| Don't hatch while I'm asleep, okay?
+| That would be super creepy.
+| ...
+
+$ showBackground none
+
+^ Poke the egg. ^ Leave it alone.
+
+    * poke
+
+    > none
+    | *...*
+    | *A tiny crack appears in the egg's shell*
+
+    $ showBackground room
+    $ showActor 1 frog
+
+    > frog
+    | RIBBIT!
+    > chloe
+    | ...
+    > frog
+    | Behold!
+    | The magnificent Chef Frogger!
+    | Hatched at your command!
+    | Prepare to be amazed by my culinary!
+    | ...
+    | Wait a minute...
+    | This isn't a kitchen.
+    > chloe
+    | But it's an egg...
+    > frog
+    | Right.
+    | Tiny technical difficulty.
+    | I haven't quite mastered metamorphosis.
+    > chloe
+    | Metamor... what?
+    > frog
+    | You know, caterpillar to butterfly...
+    | Except... well, not quite.
+    | Perhaps I'm a frogbutterfly?
+    | A flyfrog?
+    > chloe
+    | A flyfrog!
+    > frog
+    | Indeed!
+    | Now.
+    | Where can I find some delicious flies?
+    > chloe
+    | There aren't any flies here...
+    > frog
+    | No flies?!
+    | This is a culinary catastrophe!
+    > chloe
+    | Don't worry.
+    | I have some gummy worms.
+    > frog
+    | Hmm... Unconventional.
+    | But beggars can't be choosers.
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *The flyfrog chomps on a gummy worm*
+
+    $ showBackground room
+
+    > frog
+    | Mm...
+    | These are delightful!
+    > chloe
+    | See? Everything worked out!
+    > frog
+    | Yes, but...
+    | My culinary talents are wasted...
+    | ...
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *A moment of silence*
+
+    $ showBackground room
+
+    > frog
+    | Hmm...
+    | But a true chef adapts!
+    | Perhaps I can whip up a gourmet...
+    | Cactus salad?
+    > chloe
+    | I don't think cacti are edible...
+    > frog
+    | Nonsense!
+    | Everything can be a delicacy!
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *The flyfrog takes a bite of the cactus*
+
+    $ showBackground room
+
+    > frog
+    | ...
+    | Okay, maybe not everything.
+    > chloe
+    | Maybe you shouldn't experiment on my plants...
+    > frog
+    | Perhaps a career change is in order.
+    | How about a singing frog?
+    > chloe
+    | You can sing?
+    > frog
+    | Behold!
+    > chloe
+    | Maybe stick with the culinary arts.
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *Later that night*
+    | *The flyfrog is happily munching on gummy worms*
+
+    $ showBackground room
+
+    > frog
+    | Mm...
+    | This simple life isn't so bad after all.
+    | ...
+    | Perhaps true metamorphosis...
+    | Isn't about becoming something else.
+    | But appreciating the things around you.
+    @ end
+
+    * leave
+
+    $ showBackground room
+
+    > chloe
+    | Let's leave the egg alone for now.
+    | ...
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *Later that night*
+    | *Something bounces around clumsily*
+
+    $ showBackground room
+    $ showActor 1 bee
+
+    > bee
+    | BZZZ!
+    > chloe
+    | ...
+    > bee
+    | Freedom at last!
+    | Now, where are all the flowers?
+    > chloe
+    | ...
+    | You can talk?
+    | But...
+    | You don't sound very bee-like.
+    > bee
+    | BZZZ!
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *The bee struggles to fly*
+
+    $ showBackground room
+
+    > chloe
+    | ...
+    | Or move very bee-like.
+    > bee
+    | Well...
+    | I haven't quite figured it out yet.
+    | The whole "aerodynamics" thing.
+    | It's a bouncing situation.
+    > chloe
+    | A bouncing bee!
+    > bee
+    | Exactly!
+    | The first of its kind!
+    > chloe
+    | Do you need help getting around?
+    > bee
+    | That would be fantastic!
+    | But be careful.
+    | I'm still a little... ticklish.
+    > chloe
+    | Don't worry, I'll be gentle.
+    | Now, where do you want to go?
+    | To a flower patch?
+    | I don't know if I can do that now.
+    > bee
+    | No flowers?!
+    | What a disaster!
+    > chloe
+    | I have some sugar water.
+    | How about that?
+    > bee
+    | Sugar water?
+    | BZZZ!
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *A moment of almost silence*
+
+    $ showBackground room
+
+    > bee
+    | ...
+    | That must be a bee-licious feast!
+    > chloe
+    | See? Everything worked out!
+    > bee
+    | Almost everything...
+    | This bouncing is exhausting!
+    | I feel like a ping-pong ball!
+    > chloe
+    | Maybe you can be a... ground bee?
+    > bee
+    | A ground bee?
+    | Sounds... unimpressive.
+    > chloe
+    | But think about it!
+    | You can explore things on the ground!
+    | Like ants and... uh... pebbles?
+    > bee
+    | Pebbles?
+    | I suppose...
+    | It's better than bouncing aimlessly.
+
+    $ showBackground none
+
+    > none
+    | *...*
+    | *Later that night*
+    | *The bee is happily bouncing around*
+
+    $ showBackground room
+
+    > bee
+    | ...
+    | This simple life isn't so bad after all.
+    > chloe
+    | See? Even without wings...
+    | You can still be a fantastic bee.
+    > bee
+    | You know...
+    | Maybe being different isn't so bad.
+    | Maybe it's what makes us... well, us.
+    > chloe
+    | And maybe sometimes...
+    | The most beautiful transformations...
+    | Are the ones we never expected.
+    @ end
+
+* end
+
+$ showBackground none
+
+> none
+| ...
+| [ A game by Kapendev. ]
+| [ Thank you for playing. ]
+| [ Font ]
+| [ Pixeloid (GGBotNet, itch.io) ]
+| [ Music ]
+| [ Stop For A Moment (vitalezzz, opengameart.org) ]
+| ...
+@ start
