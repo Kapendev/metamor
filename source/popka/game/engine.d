@@ -8,14 +8,12 @@ module popka.game.engine;
 
 import ray = popka.vendor.ray.raylib;
 import raygl = popka.vendor.ray.rlgl;
-import popka.game.pixeloid;
 
 public import popka.core.basic;
 
 @safe @nogc nothrow:
 
 PopkaState popkaState;
-Font popkaPixeloidFont;
 
 enum {
     defaultFPS = 60,
@@ -555,7 +553,6 @@ void openWindow(float width, float height, const(char)[] title = "Popka", Color 
     popkaState.isWindowOpen = true;
     popkaState.backgroundColor = color;
     popkaState.lastWindowSize = Vec2(width, height);
-    popkaState.debugFont = popkaFont;
     popkaState.debugFontOptions.color = defaultDebugFontColor;
 }
 
@@ -570,7 +567,6 @@ void freeWindow() {
     popkaState.view.free();
     ray.CloseWindow();
     popkaState = PopkaState();
-    popkaPixeloidFont = Font();
 }
 
 bool isWindowOpen() {
@@ -769,13 +765,6 @@ float deltaTime() {
 
 Vec2 deltaMouse() {
     return toPopka(ray.GetMouseDelta());
-}
-
-Font popkaFont() {
-    if (popkaPixeloidFont.isEmpty) {
-        popkaPixeloidFont = loadPixeloidFont();
-    }
-    return popkaPixeloidFont;
 }
 
 Font rayFont() {

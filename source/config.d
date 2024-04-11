@@ -25,3 +25,6 @@ enum backgroundSize = Vec2(320.0f, 180.0f);
 enum textColor = Color(0x85, 0x95, 0xa1);
 enum worldColor = Color(0x14, 0x0c, 0x1c);
 enum backgroundColor = Color(0x44, 0x24, 0x34);
+
+enum pixeloidFontRunes = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~äöÜßΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩωʹ͵ͺ;΄΅·ΆΈΉΊΌΎΏΐΪΫάέήίΰϊϋόύώϔ";
+enum pixeloadFontSpacing = Vec2(1.0f, 14.0f);

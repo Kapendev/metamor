@@ -124,7 +124,8 @@ void readyResources(const(char)[] exePath) {
         filePathBuffer.append(path);
         return filePathBuffer.items;
     }
-    game.font = popkaFont;
+    game.font.load(filePath("pixeloid_sans.ttf"), 11, pixeloidFontRunes);
+    game.font.spacing = pixeloadFontSpacing;
     game.actorAtlas.load(filePath("actor_atlas.png"));
     game.cursorSprite.load(filePath("cursor.png"));
     game.dialogue.load(filePath("dialogue.txt"));
@@ -137,6 +138,7 @@ void readyResources(const(char)[] exePath) {
 }
 
 void freeResources() {
+    game.font.free();
     game.actorAtlas.free();
     game.backgroundAtlas.free();
     game.backgroundBufferAtlas.free();
