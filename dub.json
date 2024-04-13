@@ -35,6 +35,21 @@
 			"libs": [
 				"raylibdll"
 			]
+		},
+		{
+			"name": "macos_app",
+			"targetType": "executable",
+			"platforms": [
+				"osx"
+			],
+			"libs": [
+				"raylib.500"
+			],
+			"lflags": [
+				"-L.",
+				"-rpath",
+				"@executable_path/"
+			]
 		}
 	]
 }
