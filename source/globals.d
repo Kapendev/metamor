@@ -1,7 +1,7 @@
-module noveldev.globals;
+module metamor.globals;
 
-import popka.basic;
-import noveldev.app;
+import popka;
+import metamor.app;
 
 Game game;
 ubyte[ActorID.max + 1] actorTileIDs;

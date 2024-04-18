@@ -4,10 +4,10 @@
 /// The basic module acts as a central hub,
 /// bundling together numerous specialized modules.
 
-module popka.game.basic;
+module popka;
 
-public import popka.game.dialogue;
-public import popka.game.engine;
+public import popka.core;
+public import popka.game;
 
 @safe @nogc nothrow:
 

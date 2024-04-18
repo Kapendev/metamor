@@ -4,18 +4,9 @@
 /// The dialogue module is a versatile dialogue system,
 /// enabling the creation of interactive conversations and branching narratives.
 
-/*
-# --- Checks
-# ? count
-# ? count = 0
-*/
-
 module popka.game.dialogue;
 
-import popka.core.container;
-import popka.core.io;
-import popka.core.strconv;
-import popka.core.strutils;
+import popka.core;
 
 @safe @nogc nothrow:
 
@@ -63,7 +54,7 @@ struct Dialogue {
         load(path);
     }
 
-    bool hasOptions() {
+    bool hasChoices() {
         return menu.length != 0;
     }
 
@@ -75,7 +66,7 @@ struct Dialogue {
         return unitIndex < units.length && units[unitIndex].kind != DialogueUnitKind.pause;
     }
 
-    const(char)[][] options() {
+    const(char)[][] choices() {
         return menu.items;
     }
 
@@ -142,6 +133,7 @@ struct Dialogue {
         update();
     }
 
+    // TODO: Remove the asserts!
     void update() {
         if (units.length != 0 && unitIndex < units.length - 1) {
             unitIndex += 1;
@@ -166,7 +158,7 @@ struct Dialogue {
                 }
                 case DialogueUnitKind.menu: {
                     if (text.length == 0) {
-                        assert(0, "TODO: Do something about the error case.");
+                        assert(0, "TODO: An empty menu is an error for now.");
                     }
                     menu.clear();
                     auto view = text;
@@ -182,7 +174,7 @@ struct Dialogue {
                     auto name = trim(skipValue(view, '='));
                     auto value = trim(skipValue(view, '='));
                     if (name.length == 0) {
-                        assert(0, "TODO: Do something about the error case.");
+                        assert(0, "TODO: An variable without a name is an error for now.");
                     }
                     // Find if variable exists.
                     foreach (i, variable; variables.items) {
@@ -212,7 +204,7 @@ struct Dialogue {
                                 }
                             }
                             if (valueVariableIndex < 0) {
-                                assert(0, "TODO: Do something about the error case.");
+                                assert(0, "TODO: A variable that doesn't exist it an error for now.");
                             } else {
                                 variables[variableIndex].value = variables[valueVariableIndex].value;
                             }
@@ -235,7 +227,7 @@ struct Dialogue {
                     }
                     // Add/Remove from variable.
                     if (variableIndex < 0) {
-                        assert(0, "TODO: Do something about the error case.");
+                        assert(0, "TODO: A variable that doesn't exist it an error for now.");
                     }
                     if (units[unitIndex].kind == DialogueUnitKind.plus) {
                         variables[variableIndex].value += 1;
@@ -247,7 +239,7 @@ struct Dialogue {
                 }
                 case DialogueUnitKind.command: {
                     if (text.length == 0) {
-                        assert(0, "TODO: Do something about the error case.");
+                        assert(0, "TODO: An empty command is an error for now.");
                     }
                     command.clear();
                     auto view = text;
@@ -259,21 +251,6 @@ struct Dialogue {
                 }
             }
         }
-    }
-
-    void free() {
-        foreach (ref unit; units) {
-            unit.text.free();
-        }
-        units.free();
-        foreach (ref variable; variables) {
-            variable.name.free();
-        }
-        variables.free();
-        menu.free();
-        command.free();
-        reset();
-        pointCount = 0;
     }
 
     void parse(const(char)[] script) {
@@ -312,9 +289,27 @@ struct Dialogue {
     }
 
     void load(const(char)[] path) {
-        auto file = readText(path);
-        parse(file.items);
-        file.free();
+        free();
+        if (path.length != 0) {
+            auto file = readText(path);
+            parse(file.items);
+            file.free();
+        }
+    }
+
+    void free() {
+        foreach (ref unit; units) {
+            unit.text.free();
+        }
+        units.free();
+        foreach (ref variable; variables) {
+            variable.name.free();
+        }
+        variables.free();
+        menu.free();
+        command.free();
+        reset();
+        pointCount = 0;
     }
 }
 
@@ -326,5 +321,3 @@ bool isValidDialogueUnitKind(char c) {
     }
     return false;
 }
-
-unittest {}

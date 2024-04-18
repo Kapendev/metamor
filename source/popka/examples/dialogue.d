@@ -3,9 +3,9 @@
 
 /// An example that shows how to use the dialogue system of Popka.
 
-module popka.example.dialogue;
+module popka.examples.dialogue;
 
-import popka.basic;
+import popka;
 
 @safe @nogc nothrow:
 
@@ -18,28 +18,28 @@ void runDialogueExample() {
     auto script = "
         # This is a comment.
 
-        ! loopCount
-        * Menu
-        ^ Select first loop. ^ Select second loop. ^ End dialogue.
+        ! choiceCount
 
-        * Point1
+        * menuPoint
+        ^ Select first choice. ^ Select second choice. ^ End dialogue.
+
+        * choice1
         > Bob
         | Hi.
         | My name is Bob.
         > Mia
         | Hello!
-        | Nice to meet you!
         | My name is Mia.
-        + loopCount
-        @ Menu
+        + choiceCount
+        @ menuPoint
 
-        * Point2
+        * choice2
         > Bob
         | Yo Mia, this game is the bomb!
         > Mia
         | Trueee!
-        + loopCount
-        @ Menu
+        + choiceCount
+        @ menuPoint
 
         * End
     ";
@@ -52,10 +52,10 @@ void runDialogueExample() {
     while (isWindowOpen) {
         // Update the game.
         if (dialogue.hasText) {
-            if (dialogue.hasOptions) {
-                auto digits = digitChars[1 .. 1 + dialogue.options.length];
+            if (dialogue.hasChoices) {
+                auto digits = digitChars[1 .. 1 + dialogue.choices.length];
                 foreach (i, key; digits) {
-                    if (isPressed(key)) {
+                    if (key.isPressed) {
                         dialogue.select(i);
                         break;
                     }
@@ -66,25 +66,21 @@ void runDialogueExample() {
         }
 
         // Draw the game.
-        if (dialogue.hasOptions) {
-            foreach (i, option; dialogue.options) {
-                drawDebugText("[{}] {}".fmt(i + 1, option), Vec2(8, 8 + i * 14));
+        if (dialogue.hasChoices) {
+            foreach (i, choice; dialogue.choices) {
+                auto choicePosition = Vector2(8, 8 + i * 14);
+                draw("{}".fmt(i + 1), choicePosition);
+                draw("   | {}".fmt(choice), choicePosition);
             }
         } else if (dialogue.hasText) {
-            drawDebugText("{}: {}".fmt(dialogue.actor, dialogue.text));
+            draw("{}: {}".fmt(dialogue.actor, dialogue.text));
         } else {
-            drawDebugText("The dialogue has ended.");
+            draw("The dialogue has ended.");
         }
-        foreach (i, variable; dialogue.variables.items) {
-            drawDebugText("{} = {}".fmt(variable.name.items, variable.value), Vec2(8, 8 + (i + 5) * 14));
-        }
-        drawRect(Rect(0, resolution.y * 0.75, resolution.x, resolution.y * 0.25), darkGray);
-        drawDebugText(
-            "Press a number to pick an option.\nPress space to continue.",
-            Vec2(8, resolution.y - 7 - 14 * 2)
-        );
+        draw(Rectangle(0, resolution.y * 0.8, resolution.x, resolution.y), darkGray);
+        auto infoPosition = Vector2(8, resolution.y - 2 - 14 * 2);
+        draw("Press 1, 2 or 3 to select a choice.", infoPosition);
+        draw("\nPress space to continue.", infoPosition);
     }
-    // Free all the game resources.
-    dialogue.free();
     freeWindow();
 }

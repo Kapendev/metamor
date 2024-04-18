@@ -1,8 +1,7 @@
 // Copyright 2024 Alexandros F. G. Kapretsos
 // SPDX-License-Identifier: MIT
 
-/// The container module serves as a hub for various data structures,
-/// offering a cohesive set of tools for efficient storage and retrieval of information within a program.
+/// The container module serves as a hub for various data structures.
 
 module popka.core.container;
 
@@ -84,7 +83,6 @@ struct List(T) {
             } else {
                 items = items.ptr[0 .. newLength];
             }
-            // We cast here because of the type system.
             items[$ - 1] = cast(T) arg;
         }
     }
@@ -330,18 +328,10 @@ size_t findListCapacity(size_t length) {
 
 struct Grid(T) {
     List!T cells;
-    float cellWidth;
-    float cellHeight;
     size_t rowCount;
     size_t colCount;
 
 @safe @nogc nothrow:
-
-    this(size_t rowCount, size_t colCount, size_t cellWidth, size_t cellHeight) {
-        this.cellWidth = cellWidth;
-        this.cellHeight = cellHeight;
-        resize(rowCount, colCount);
-    }
 
     this(size_t rowCount, size_t colCount) {
         resize(rowCount, colCount);
@@ -396,14 +386,6 @@ struct Grid(T) {
         return cells.length;
     }
 
-    float width() {
-        return cellWidth * colCount;
-    }
-
-    float height() {
-        return cellHeight * rowCount;
-    }
-
     void resize(size_t rowCount, size_t colCount) {
         this.cells.resize(rowCount * colCount);
         this.rowCount = rowCount;
@@ -426,5 +408,3 @@ struct Grid(T) {
         colCount = 0;
     }
 }
-
-unittest {}

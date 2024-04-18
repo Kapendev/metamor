@@ -8,7 +8,7 @@ module popka.core.io;
 
 import io = core.stdc.stdio;
 import popka.core.container;
-import popka.core.strconv;
+import popka.core.strutils;
 
 @safe @nogc nothrow:
 
@@ -50,5 +50,3 @@ void writeText(const(char)[] path, List!char content) {
     io.fclose(f);
     content.pop();
 }
-
-unittest {}

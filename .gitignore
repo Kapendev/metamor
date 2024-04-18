@@ -9,8 +9,16 @@ noveldev.dll
 noveldev.a
 noveldev.lib
 noveldev-test-*
+/metamor
+metamor.so
+metamor.dylib
+metamor.dll
+metamor.a
+metamor.lib
+metamor-test-*
 *.exe
 *.pdb
 *.o
 *.obj
 *.lst
+dub.selections.json
