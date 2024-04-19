@@ -1,8 +1,8 @@
 {
 	"name" : "metamor",
 	"description" : "A cute visual novel made with the D programming language.",
-	"authors" : ["alex"],
-	"copyright" : "Copyright © 2024, alex",
+	"authors" : ["Alexandros F. G. Kapretsos"],
+	"copyright" : "Copyright © 2024, Alexandros F. G. Kapretsos",
 	"license" : "MIT",
 	"dependencies" : {},
 	"configurations": [
