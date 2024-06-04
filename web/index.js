@@ -196,7 +196,7 @@ Module['FS_createPath']("/", "assets", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/assets/stop_for_a_moment.ogg", "start": 0, "end": 9217536, "audio": 1}, {"filename": "/assets/actor_atlas.png", "start": 9217536, "end": 9221249}, {"filename": "/assets/dialogue.txt", "start": 9221249, "end": 9228300}, {"filename": "/assets/none_atlas.png", "start": 9228300, "end": 9228989}, {"filename": "/assets/pixeloid_sans.ttf", "start": 9228989, "end": 9341657}, {"filename": "/assets/intro_atlas.png", "start": 9341657, "end": 9352019}, {"filename": "/assets/room_atlas.png", "start": 9352019, "end": 9355595}, {"filename": "/assets/cursor.png", "start": 9355595, "end": 9355771}], "remote_package_size": 9355771, "package_uuid": "f1e77436-0002-43c7-8d49-fba251b015d9"});
+    loadPackage({"files": [{"filename": "/assets/stop_for_a_moment.ogg", "start": 0, "end": 9217536, "audio": 1}, {"filename": "/assets/actor_atlas.png", "start": 9217536, "end": 9221249}, {"filename": "/assets/dialogue.txt", "start": 9221249, "end": 9228300}, {"filename": "/assets/none_atlas.png", "start": 9228300, "end": 9228989}, {"filename": "/assets/pixeloid_sans.ttf", "start": 9228989, "end": 9341657}, {"filename": "/assets/intro_atlas.png", "start": 9341657, "end": 9352019}, {"filename": "/assets/room_atlas.png", "start": 9352019, "end": 9355595}, {"filename": "/assets/cursor.png", "start": 9355595, "end": 9355771}], "remote_package_size": 9355771, "package_uuid": "3e57e280-527a-4630-9dcc-1cc85a4b6ca1"});
 
   })();
 

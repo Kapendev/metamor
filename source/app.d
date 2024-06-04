@@ -49,12 +49,7 @@ struct Game {
     bool isUIVisible = true;
 }
 
-void readyResources(const(char)[] exePath) {
-    static char[1024] exeDirPathBuffer = void;
-
-    // Find assets path.
-    auto exeDirPath = pathDir(exePath);
-
+void readyResources(const(char)[] exeDirPath) {
     // Initialize tile ids.
     actorTileIDs[ActorID.none] = 0;
     actorTileIDs[ActorID.chloe] = 0;
@@ -415,15 +410,13 @@ void gameLoop() {
     }
 }
 
-extern(C)
-void main(int argc, const(char)** argv) {
+void gameMain(const(char)[] path) {
     openWindow(1280, 720);
     lockResolution(320, 180);
     hideCursor();
     togglePixelPerfect();
 
-    auto appName = List!char(toStr(argv[0]));
-    readyResources(appName.items);
+    readyResources(path);
     game.music.changeVolume(0.2f);
     game.music.play();
     updateWindow!gameLoop();
@@ -431,3 +424,5 @@ void main(int argc, const(char)** argv) {
     freeResources();
     freeWindow();
 }
+
+mixin addGameMain!(gameMain);
