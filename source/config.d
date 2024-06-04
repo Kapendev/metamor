@@ -18,13 +18,13 @@ enum optionRectHeight = 16.0f;
 enum optionRectExtraWidth = 20.0f;
 enum optionDelayTime = 0.5f;
 
-enum actorSize = Vector2(70.0f, 140.0f);
-enum cursorSize = Vector2(7.0f, 7.0f);
-enum backgroundSize = Vector2(320.0f, 180.0f);
+enum actorSize = Vec2(70.0f, 140.0f);
+enum cursorSize = Vec2(7.0f, 7.0f);
+enum backgroundSize = Vec2(320.0f, 180.0f);
 
 enum textColor = Color(0x85, 0x95, 0xa1);
 enum worldColor = Color(0x14, 0x0c, 0x1c);
-enum backgroundColor = Color(0x44, 0x24, 0x34);
+enum gameColor = Color(0x44, 0x24, 0x34);
 
 enum pixeloidFontRunes = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~äöÜßΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩωʹ͵ͺ;΄΅·ΆΈΉΊΌΎΏΐΪΫάέήίΰϊϋόύώϔ";
-enum pixeloadFontSpacing = Vector2(1.0f, 14.0f);
+enum pixeloadFontSpacing = Vec2(1.0f, 14.0f);

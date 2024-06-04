@@ -6,11 +6,17 @@
 
 module popka.core.math;
 
-import math = core.stdc.math;
+private {
+    @system @nogc nothrow extern(C):
+
+    float sqrtf(float x);
+    float sinf(float x);
+    float cosf(float x);
+}
 
 @safe @nogc nothrow:
 
-enum pi = 3.141592f;
+enum pi = 3.14159265358979323846f;
 
 enum Hook : ubyte {
     topLeft, top, topRight,
@@ -18,10 +24,13 @@ enum Hook : ubyte {
     bottomLeft, bottom, bottomRight,
 }
 
-struct Vector2 {
+struct Vec2 {
     float x = 0.0f;
     float y = 0.0f;
-    
+
+    enum zero = Vec2(0.0f, 0.0f);
+    enum one = Vec2(1.0f, 1.0f);
+
     @safe @nogc nothrow:
 
     this(float x, float y) {
@@ -37,55 +46,86 @@ struct Vector2 {
         this(xy[0], xy[1]);
     }
 
-    Vector2 opUnary(string op)() {
-        Vector2 result = void;
-        result.x = mixin(op ~ "x");
-        result.y = mixin(op ~ "y");
-        return result;
+    Vec2 opUnary(const(char)[] op)() {
+        return Vec2(
+            mixin(op, "x"),
+            mixin(op, "y"),
+        );
     }
 
-    Vector2 opBinary(string op)(Vector2 rhs) {
-        Vector2 result = void;
-        result.x = mixin("x" ~ op ~ "rhs.x");
-        result.y = mixin("y" ~ op ~ "rhs.y");
-        return result;
+    Vec2 opBinary(const(char)[] op)(Vec2 rhs) {
+        return Vec2(
+            mixin("x", op, "rhs.x"),
+            mixin("y", op, "rhs.y"),
+        );
     }
 
-    void opOpAssign(string op)(Vector2 rhs) {
-        mixin("x" ~ op ~ "=" ~ "rhs.x;");
-        mixin("y" ~ op ~ "=" ~ "rhs.y;");
+    Vec2 opBinary(const(char)[] op)(float rhs) {
+        return Vec2(
+            mixin("x", op, "rhs"),
+            mixin("y", op, "rhs"),
+        );
     }
 
-    Vector2 floor() {
-        return Vector2(x.floor, y.floor);
+    Vec2 opBinaryRight(const(char)[] op)(float lhs) {
+        return Vec2(
+            mixin("lhs", op, "x"),
+            mixin("lhs", op, "y"),
+        );
+    }
+
+    void opOpAssign(const(char)[] op)(Vec2 rhs) {
+        mixin("x", op, "=rhs.x;");
+        mixin("y", op, "=rhs.y;");
+    }
+
+    void opOpAssign(const(char)[] op)(float rhs) {
+        mixin("x", op, "=rhs;");
+        mixin("y", op, "=rhs;");
+    }
+
+    Vec2 abs() {
+        return Vec2(x.abs, y.abs);
+    }
+
+    Vec2 floor() {
+        return Vec2(x.floor, y.floor);
+    }
+
+    Vec2 ceil() {
+        return Vec2(x.ceil, y.ceil);
+    }
+
+    Vec2 round() {
+        return Vec2(x.round, y.round);
     }
 
     float length() {
         return sqrt(x * x + y * y);
     }
 
-    Vector2 normalize() {
+    Vec2 normalize() {
         float l = length;
         if (l == 0.0f) {
-            return Vector2();
+            return Vec2();
         } else {
-            return this / Vector2(l);
+            return this / Vec2(l);
         }
     }
 
-    Vector2 directionTo(Vector2 to) {
+    Vec2 directionTo(Vec2 to) {
         return (to - this).normalize();
     }
 
-    Vector2 moveTo(Vector2 to, Vector2 delta) {
-        Vector2 result;
-        Vector2 offset = this.directionTo(to) * delta;
-        if (abs(to.x - x) > abs(offset.x)) {
+    Vec2 moveTo(Vec2 to, Vec2 delta) {
+        Vec2 result = void;
+        Vec2 offset = this.directionTo(to) * delta;
+        if (.abs(to.x - x) > .abs(offset.x)) {
             result.x = x + offset.x;
         } else {
             result.x = to.x;
         }
-        if (abs(to.y - y) > abs(offset.y)) {
+        if (.abs(to.y - y) > .abs(offset.y)) {
             result.y = y + offset.y;
         } else {
             result.y = to.y;
@@ -93,18 +133,21 @@ struct Vector2 {
         return result;
     }
 
-    Vector2 moveTo(Vector2 to, Vector2 delta, float slowdown) {
-        return Vector2(
+    Vec2 moveTo(Vec2 to, Vec2 delta, float slowdown) {
+        return Vec2(
             .moveTo(x, to.x, delta.x, slowdown),
             .moveTo(y, to.y, delta.y, slowdown),
         );
     }
 }
 
-struct Vector3 {
+struct Vec3 {
     float x = 0.0f;
     float y = 0.0f;
     float z = 0.0f;
+
+    enum zero = Vec3(0.0f, 0.0f, 0.0f);
+    enum one = Vec3(1.0f, 1.0f, 1.0f);
 
     @safe @nogc nothrow:
 
@@ -122,42 +165,79 @@ struct Vector3 {
         this(xyz[0], xyz[1], xyz[2]);
     }
 
-    this(Vector2 xy, float z) {
+    this(Vec2 xy, float z) {
         this(xy.x, xy.y, z);
     }
 
-    Vector3 opUnary(string op)() {
-        Vector3 result = void;
-        result.x = mixin(op ~ "x");
-        result.y = mixin(op ~ "y");
-        result.z = mixin(op ~ "z");
-        return result;
+    Vec3 opUnary(const(char)[] op)() {
+        return Vec3(
+            mixin(op, "x"),
+            mixin(op, "y"),
+            mixin(op, "z"),
+        );
     }
 
-    Vector3 opBinary(string op)(Vector3 rhs) {
-        Vector3 result = void;
-        result.x = mixin("x" ~ op ~ "rhs.x");
-        result.y = mixin("y" ~ op ~ "rhs.y");
-        result.z = mixin("z" ~ op ~ "rhs.z");
-        return result;
+    Vec3 opBinary(const(char)[] op)(Vec3 rhs) {
+        return Vec3(
+            mixin("x", op, "rhs.x"),
+            mixin("y", op, "rhs.y"),
+            mixin("z", op, "rhs.z"),
+        );
     }
 
-    void opOpAssign(string op)(Vector3 rhs) {
-        mixin("x" ~ op ~ "=" ~ "rhs.x;");
-        mixin("y" ~ op ~ "=" ~ "rhs.y;");
-        mixin("z" ~ op ~ "=" ~ "rhs.z;");
+    Vec3 opBinary(const(char)[] op)(float rhs) {
+        return Vec3(
+            mixin("x", op, "rhs"),
+            mixin("y", op, "rhs"),
+            mixin("z", op, "rhs"),
+        );
     }
 
-    Vector3 floor() {
-        return Vector3(x.floor, y.floor, z.floor);
+    Vec3 opBinaryRight(const(char)[] op)(float lhs) {
+        return Vec3(
+            mixin("lhs", op, "x"),
+            mixin("lhs", op, "y"),
+            mixin("lhs", op, "z"),
+        );
+    }
+
+    void opOpAssign(const(char)[] op)(Vec3 rhs) {
+        mixin("x", op, "=rhs.x;");
+        mixin("y", op, "=rhs.y;");
+        mixin("z", op, "=rhs.z;");
+    }
+
+    void opOpAssign(const(char)[] op)(float rhs) {
+        mixin("x", op, "=rhs;");
+        mixin("y", op, "=rhs;");
+        mixin("z", op, "=rhs;");
+    }
+
+    Vec3 abs() {
+        return Vec3(x.abs, y.abs, z.abs);
+    }
+
+    Vec3 floor() {
+        return Vec3(x.floor, y.floor, z.floor);
+    }
+
+    Vec3 ceil() {
+        return Vec3(x.ceil, y.ceil, z.ceil);
+    }
+
+    Vec3 round() {
+        return Vec3(x.round, y.round, z.round);
     }
 }
 
-struct Vector4 {
+struct Vec4 {
     float x = 0.0f;
     float y = 0.0f;
     float z = 0.0f;
     float w = 0.0f;
+
+    enum zero = Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    enum one = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     @safe @nogc nothrow:
 
@@ -176,61 +256,105 @@ struct Vector4 {
         this(xyzw[0], xyzw[1], xyzw[2], xyzw[3]);
     }
 
-    Vector4 opUnary(string op)() {
-        Vector4 result = void;
-        result.x = mixin(op ~ "x");
-        result.y = mixin(op ~ "y");
-        result.z = mixin(op ~ "z");
-        result.w = mixin(op ~ "w");
-        return result;
+    Vec4 opUnary(const(char)[] op)() {
+        return Vec4(
+            mixin(op, "x"),
+            mixin(op, "y"),
+            mixin(op, "z"),
+            mixin(op, "w"),
+        );
     }
 
-    Vector4 opBinary(string op)(Vector4 rhs) {
-        Vector4 result = void;
-        result.x = mixin("x" ~ op ~ "rhs.x");
-        result.y = mixin("y" ~ op ~ "rhs.y");
-        result.z = mixin("z" ~ op ~ "rhs.z");
-        result.w = mixin("w" ~ op ~ "rhs.w");
-        return result;
+    Vec4 opBinary(const(char)[] op)(Vec4 rhs) {
+        return Vec4(
+            mixin("x", op, "rhs.x"),
+            mixin("y", op, "rhs.y"),
+            mixin("z", op, "rhs.z"),
+            mixin("w", op, "rhs.w"),
+        );
     }
 
-    void opOpAssign(string op)(Vector4 rhs) {
-        mixin("x" ~ op ~ "=" ~ "rhs.x;");
-        mixin("y" ~ op ~ "=" ~ "rhs.y;");
-        mixin("z" ~ op ~ "=" ~ "rhs.z;");
-        mixin("w" ~ op ~ "=" ~ "rhs.w;");
+    Vec4 opBinary(const(char)[] op)(float rhs) {
+        return Vec4(
+            mixin("x", op, "rhs"),
+            mixin("y", op, "rhs"),
+            mixin("z", op, "rhs"),
+            mixin("w", op, "rhs"),
+        );
     }
 
-    Vector4 floor() {
-        return Vector4(x.floor, y.floor, z.floor, w.floor);
+    Vec4 opBinaryRight(const(char)[] op)(float lhs) {
+        return Vec4(
+            mixin("lhs", op, "x"),
+            mixin("lhs", op, "y"),
+            mixin("lhs", op, "z"),
+            mixin("lhs", op, "w"),
+        );
+    }
+
+    void opOpAssign(const(char)[] op)(Vec4 rhs) {
+        mixin("x", op, "=rhs.x;");
+        mixin("y", op, "=rhs.y;");
+        mixin("z", op, "=rhs.z;");
+        mixin("w", op, "=rhs.w;");
+    }
+
+    void opOpAssign(const(char)[] op)(float rhs) {
+        mixin("x", op, "=rhs;");
+        mixin("y", op, "=rhs;");
+        mixin("z", op, "=rhs;");
+        mixin("w", op, "=rhs;");
+    }
+
+    Vec4 abs() {
+        return Vec4(x.abs, y.abs, z.abs, w.abs);
+    }
+
+    Vec4 floor() {
+        return Vec4(x.floor, y.floor, z.floor, w.floor);
+    }
+
+    Vec4 ceil() {
+        return Vec4(x.ceil, y.ceil, z.ceil, w.ceil);
+    }
+
+    Vec4 round() {
+        return Vec4(x.round, y.round, z.round, w.round);
     }
 }
 
-struct Rectangle {
-    Vector2 position;
-    Vector2 size;
+struct Rect {
+    Vec2 position;
+    Vec2 size;
+
+    enum zero = Rect(0.0f, 0.0f, 0.0f, 0.0f);
+    enum one = Rect(1.0f, 1.0f, 1.0f, 1.0f);
 
     @safe @nogc nothrow:
 
-    this(Vector2 position, Vector2 size) {
+    this(Vec2 position, Vec2 size) {
         this.position = position;
         this.size = size;
     }
 
-    this(Vector2 size) {
-        this.size = size;
+    this(Vec2 size) {
+        this(Vec2(), size);
     }
 
     this(float x, float y, float w, float h) {
-        this.position.x = x;
-        this.position.y = y;
-        this.size.x = w;
-        this.size.y = h;
+        this(Vec2(x, y), Vec2(w, h));
     }
 
     this(float w, float h) {
-        this.size.x = w;
-        this.size.y = h;
+        this(Vec2(), Vec2(w, h));
+    }
+
+    this(Vec2 position, float w, float h) {
+        this(position, Vec2(w, h));
+    }
+
+    this(float x, float y, Vec2 size) {
+        this(Vec2(x, y), size);
     }
 
     void fix() {
@@ -244,41 +368,91 @@ struct Rectangle {
         }
     }
 
-    Rectangle floor() {
-        Rectangle result = void;
+    Rect floor() {
+        Rect result = void;
         result.position = position.floor;
         result.size = size.floor;
         return result;
     }
 
-    Vector2 origin(Hook hook) {
+    Rect ceil() {
+        Rect result = void;
+        result.position = position.ceil;
+        result.size = size.ceil;
+        return result;
+    }
+
+    Rect round() {
+        Rect result = void;
+        result.position = position.round;
+        result.size = size.round;
+        return result;
+    }
+
+    Vec2 origin(Hook hook) {
         final switch (hook) {
-            case Hook.topLeft: return size * Vector2(0.0f, 0.0f);
-            case Hook.top: return size * Vector2(0.5f, 0.0f);
-            case Hook.topRight: return size * Vector2(1.0f, 0.0f);
-            case Hook.left: return size * Vector2(0.0f, 0.5f);
-            case Hook.center: return size * Vector2(0.5f, 0.5f);
-            case Hook.right: return size * Vector2(1.0f, 0.5f);
-            case Hook.bottomLeft: return size * Vector2(0.0f, 1.0f);
-            case Hook.bottom: return size * Vector2(0.5f, 1.0f);
-            case Hook.bottomRight: return size * Vector2(1.0f, 1.0f);
+            case Hook.topLeft: return size * Vec2(0.0f, 0.0f);
+            case Hook.top: return size * Vec2(0.5f, 0.0f);
+            case Hook.topRight: return size * Vec2(1.0f, 0.0f);
+            case Hook.left: return size * Vec2(0.0f, 0.5f);
+            case Hook.center: return size * Vec2(0.5f, 0.5f);
+            case Hook.right: return size * Vec2(1.0f, 0.5f);
+            case Hook.bottomLeft: return size * Vec2(0.0f, 1.0f);
+            case Hook.bottom: return size * Vec2(0.5f, 1.0f);
+            case Hook.bottomRight: return size * Vec2(1.0f, 1.0f);
         }
     }
 
-    Rectangle rectangle(Hook hook) {
-        Rectangle result = void;
+    Rect area(Hook hook) {
+        Rect result = void;
         result.position = position - origin(hook);
         result.size = size;
         return result;
     }
 
-    Vector2 point(Hook hook) {
-        Vector2 result = void;
+    Vec2 point(Hook hook) {
+        Vec2 result = void;
         result = position + origin(hook);
         return result;
     }
 
-    bool hasPoint(Vector2 point) {
+    Vec2 topLeft() {
+        return point(Hook.topLeft);
+    }
+
+    Vec2 top() {
+        return point(Hook.top);
+    }
+
+    Vec2 topRight() {
+        return point(Hook.topRight);
+    }
+
+    Vec2 left() {
+        return point(Hook.left);
+    }
+
+    Vec2 center() {
+        return point(Hook.center);
+    }
+
+    Vec2 right() {
+        return point(Hook.right);
+    }
+
+    Vec2 bottomLeft() {
+        return point(Hook.bottomLeft);
+    }
+
+    Vec2 bottom() {
+        return point(Hook.bottom);
+    }
+
+    Vec2 bottomRight() {
+        return point(Hook.bottomRight);
+    }
+
+    bool hasPoint(Vec2 point) {
         return (
             point.x >= position.x &&
             point.x <= position.x + size.x &&
@@ -287,7 +461,7 @@ struct Rectangle {
         );
     }
 
-    bool hasIntersection(Rectangle area) {
+    bool hasIntersection(Rect area) {
         return (
             position.x + size.x >= area.position.x &&
             position.x <= area.position.x + area.size.x &&
@@ -296,10 +470,10 @@ struct Rectangle {
         );
     }
 
-    Rectangle intersection(Rectangle area) {
-        Rectangle result = void;
+    Rect intersection(Rect area) {
+        Rect result = void;
         if (!this.hasIntersection(area)) {
-            result = Rectangle();
+            result = Rect();
         } else {
             float maxY = max(position.x, area.position.x);
             float maxX = max(position.y, area.position.y);
@@ -311,8 +485,8 @@ struct Rectangle {
         return result;
     }
 
-    Rectangle merger(Rectangle area) {
-        Rectangle result = void;
+    Rect merger(Rect area) {
+        Rect result = void;
         float minX = min(position.x, area.position.x);
         float minY = min(position.y, area.position.y);
         result.position.x = minX;
@@ -322,102 +496,127 @@ struct Rectangle {
         return result;
     }
 
-    Rectangle addLeft(float amount) {
+    Rect addLeft(float amount) {
         position.x -= amount;
         size.x += amount;
-        return Rectangle(position.x, position.y, amount, size.y);
+        return Rect(position.x, position.y, amount, size.y);
     }
 
-    Rectangle addRight(float amount) {
+    Rect addRight(float amount) {
         float w = size.x;
         size.x += amount;
-        return Rectangle(w, position.y, amount, size.y);
+        return Rect(w, position.y, amount, size.y);
     }
 
-    Rectangle addTop(float amount) {
+    Rect addTop(float amount) {
         position.y -= amount;
         size.y += amount;
-        return Rectangle(position.x, position.y, size.x, amount);
+        return Rect(position.x, position.y, size.x, amount);
     }
 
-    Rectangle addBottom(float amount) {
+    Rect addBottom(float amount) {
         float h = size.y;
         size.y += amount;
-        return Rectangle(position.x, h, size.x, amount);
+        return Rect(position.x, h, size.x, amount);
     }
 
-    Rectangle subLeft(float amount) {
+    Rect subLeft(float amount) {
         float x = position.x;
         position.x = min(position.x + amount, position.x + size.x);
         size.x = max(size.x - amount, 0.0f);
-        return Rectangle(x, position.y, amount, size.y);
+        return Rect(x, position.y, amount, size.y);
     }
 
-    Rectangle subRight(float amount) {
+    Rect subRight(float amount) {
         size.x = max(size.x - amount, 0.0f);
-        return Rectangle(position.x + size.x, position.y, amount, size.y);
+        return Rect(position.x + size.x, position.y, amount, size.y);
     }
 
-    Rectangle subTop(float amount) {
+    Rect subTop(float amount) {
         float y = position.y;
         position.y = min(position.y + amount, position.y + size.y);
         size.y = max(size.y - amount, 0.0f);
-        return Rectangle(position.x, y, size.x, amount);
+        return Rect(position.x, y, size.x, amount);
     }
 
-    Rectangle subBottom(float amount) {
+    Rect subBottom(float amount) {
         size.y = max(size.y - amount, 0.0f);
-        return Rectangle(position.x, position.y + size.y, size.x, amount);
+        return Rect(position.x, position.y + size.y, size.x, amount);
     }
 
-    void addLeftRight(float amount) {
+    Rect addLeftRight(float amount) {
         this.addLeft(amount);
         this.addRight(amount);
+        return this;
     }
 
-    void addTopBottom(float amount) {
+    Rect addTopBottom(float amount) {
         this.addTop(amount);
         this.addBottom(amount);
+        return this;
     }
 
-    void addAll(float amount) {
+    Rect addAll(float amount) {
         this.addLeftRight(amount);
         this.addTopBottom(amount);
+        return this;
     }
 
-    void subLeftRight(float amount) {
+    Rect subLeftRight(float amount) {
         this.subLeft(amount);
         this.subRight(amount);
+        return this;
     }
 
-    void subTopBottom(float amount) {
+    Rect subTopBottom(float amount) {
         this.subTop(amount);
         this.subBottom(amount);
+        return this;
     }
 
-    void subAll(float amount) {
+    Rect subAll(float amount) {
         this.subLeftRight(amount);
         this.subTopBottom(amount);
+        return this;
     }
 
-    Rectangle left(float amount) {
-        Rectangle temp = this;
+    Rect left(float amount) {
+        Rect temp = this;
         return temp.subLeft(amount);
     }
 
-    Rectangle right(float amount) {
-        Rectangle temp = this;
+    Rect right(float amount) {
+        Rect temp = this;
         return temp.subRight(amount);
     }
 
-    Rectangle top(float amount) {
-        Rectangle temp = this;
+    Rect top(float amount) {
+        Rect temp = this;
         return temp.subTop(amount);
     }
 
-    Rectangle bottom(float amount) {
-        Rectangle temp = this;
+    Rect bottom(float amount) {
+        Rect temp = this;
         return temp.subBottom(amount);
+    }
+}
+
+struct Circ {
+    Vec2 position;
+    float radius = 0.0f;
+
+    enum zero = Circ(0.0f, 0.0f, 0.0f);
+    enum one = Circ(1.0f, 1.0f, 1.0f);
+
+    @safe @nogc nothrow:
+
+    this(Vec2 position, float radius) {
+        this.position = position;
+        this.radius = radius;
+    }
+
+    this(float x, float y, float radius) {
+        this(Vec2(x, y), radius);
     }
 }
 
@@ -466,16 +665,19 @@ float round(float x) {
     return x <= 0.0f ? cast(float) cast(int) (x - 0.5f) : cast(float) cast(int) (x + 0.5f);
 }
 
+@trusted
 float sqrt(float x) {
-    return math.sqrtf(x);
+    return sqrtf(x);
 }
 
+@trusted
 float sin(float x) {
-    return math.sinf(x);
+    return sinf(x);
 }
 
+@trusted
 float cos(float x) {
-    return math.cosf(x);
+    return cosf(x);
 }
 
 float lerp(float from, float to, float weight) {
@@ -499,5 +701,7 @@ float moveTo(float from, float to, float delta) {
 
 float moveTo(float from, float to, float delta, float slowdown) {
     float target = ((from * (slowdown - 1.0f)) + to) / slowdown;
-    return from + (target - from) * delta;
+    float offset = target - from;
+    if (abs(offset) > abs(delta)) return from + offset * delta;
+    else return to;
 }

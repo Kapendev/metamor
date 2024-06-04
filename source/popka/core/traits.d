@@ -8,13 +8,15 @@ module popka.core.traits;
 
 @safe @nogc nothrow:
 
-bool isBool(T)() {
+alias AliasArgs(A...) = A;
+
+bool isBoolType(T)() {
     return is(T == bool) ||
         is(T == const(bool)) ||
         is(T == immutable(bool));
 }
 
-bool isUnsigned(T)() {
+bool isUnsignedType(T)() {
     return is(T == ubyte) ||
         is(T == const(ubyte)) ||
         is(T == immutable(ubyte)) ||
@@ -29,7 +31,7 @@ bool isUnsigned(T)() {
         is(T == immutable(ulong));
 }
 
-bool isSigned(T)() {
+bool isSignedType(T)() {
     return is(T == byte) ||
         is(T == const(byte)) ||
         is(T == immutable(byte)) ||
@@ -44,7 +46,11 @@ bool isSigned(T)() {
         is(T == immutable(long));
 }
 
-bool isDouble(T)() {
+bool isIntegerType(T)() {
+    return isUnsignedType!T || isSignedType!T;
+}
+
+bool isDoubleType(T)() {
     return is(T == float) ||
     is(T == const(float)) ||
     is(T == immutable(float)) ||
@@ -53,32 +59,63 @@ bool isDouble(T)() {
     is(T == immutable(double));
 }
 
-bool isChar(T)() {
+bool isCharType(T)() {
     return is(T == char) ||
         is(T == const(char)) ||
         is(T == immutable(char));
 }
 
-bool isStr(T)() {
-    return is(T : const(char)[]);
+bool isPrimaryType(T)() {
+    return isBoolType!T ||
+        isUnsignedType!T ||
+        isSignedType!T ||
+        isDoubleType!T ||
+        isCharType!T;
 }
 
-bool isStrz(T)() {
-    return is(T : const(char)*);
-}
-
-bool isPtr(T)() {
+bool isPtrType(T)() {
     return is(T : const(void)*);
 }
 
-bool isSlice(T)() {
+bool isArrayType(T)() {
+    return is(T : const(A)[N], A, N);
+}
+
+bool isSliceType(T)() {
     return is(T : const(A)[], A);
 }
 
-bool isEnum(T)() {
+bool isEnumType(T)() {
     return is(T == enum);
 }
 
-bool isStruct(T)() {
+bool isStructType(T)() {
     return is(T == struct);
+}
+
+bool isStrType(T)() {
+    return is(T : const(char)[]);
+}
+
+bool isStrzType(T)() {
+    return is(T : const(char)*);
+}
+
+int findInAliasArgs(T, A...)() {
+    int result = -1;
+    static foreach (i, TT; A) {
+        static if (is(T == TT)) {
+            result = i;
+        }
+    }
+    return result;
+}
+
+bool isInAliasArgs(T, A...)() {
+    return findInAliasArgs!(T, A) != -1;
+}
+
+unittest {
+    assert(isInAliasArgs!(int, AliasArgs!(float)) == false);
+    assert(isInAliasArgs!(int, AliasArgs!(float, int)) == true);
 }

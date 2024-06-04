@@ -18,8 +18,10 @@ enum spaceChars = " \t\v\r\n\f";
 
 version (Windows) {
     enum pathSeparator = '\\';
+    enum otherPathSeparator = '/';
 } else {
     enum pathSeparator = '/';
+    enum otherPathSeparator = '\\';
 }
 
 enum ToValueResultError : ubyte {
@@ -29,6 +31,7 @@ enum ToValueResultError : ubyte {
 }
 
 struct ToStrOptions {
+    bool boolIsShort = false;
     ubyte floatPrecision = 2;
 }
 
@@ -150,10 +153,7 @@ bool startsWith(const(char)[] str, char start) {
 
 bool startsWithIgnoreCase(const(char)[] str, const(char)[] start) {
     if (str.length < start.length) return false;
-    foreach (i; 0 .. start.length) {
-        if (toUpper(str[i]) != toUpper(start[i])) return false;
-    }
-    return true;
+    return str[0 .. start.length].equalsIgnoreCase(start);
 }
 
 bool startsWithIgnoreCase(const(char)[] str, char start) {
@@ -162,7 +162,7 @@ bool startsWithIgnoreCase(const(char)[] str, char start) {
 
 bool endsWith(const(char)[] str, const(char)[] end) {
     if (str.length < end.length) return false;
-    return str[$ - end.length - 1 .. end.length] == end;
+    return str[$ - end.length .. $] == end;
 }
 
 bool endsWith(const(char)[] str, char end) {
@@ -171,10 +171,7 @@ bool endsWith(const(char)[] str, char end) {
 
 bool endsWithIgnoreCase(const(char)[] str, const(char)[] end) {
     if (str.length < end.length) return false;
-    foreach (i; str.length - end.length - 1 .. end.length) {
-        if (toUpper(str[i]) != toUpper(end[i])) return false;
-    }
-    return true;
+    return str[$ - end.length .. $].equalsIgnoreCase(end);
 }
 
 bool endsWithIgnoreCase(const(char)[] str, char end) {
@@ -201,7 +198,7 @@ int countIgnoreCase(const(char)[] str, const(char)[] item) {
     int result = 0;
     if (str.length < item.length || item.length == 0) return result;
     foreach (i; 0 .. str.length - item.length) {
-        if (equalsIgnoreCase(str[i .. i + item.length], item)) {
+        if (str[i .. i + item.length].equalsIgnoreCase(item)) {
             result += 1;
             i += item.length - 1;
         }
@@ -228,7 +225,7 @@ int findStart(const(char)[] str, char item) {
 int findStartIgnoreCase(const(char)[] str, const(char)[] item) {
     if (str.length < item.length || item.length == 0) return -1;
     foreach (i; 0 .. str.length - item.length) {
-        if (equalsIgnoreCase(str[i .. i + item.length], item)) return cast(int) i;
+        if (str[i .. i + item.length].equalsIgnoreCase(item)) return cast(int) i;
     }
     return -1;
 }
@@ -252,13 +249,21 @@ int findEnd(const(char)[] str, char item) {
 int findEndIgnoreCase(const(char)[] str, const(char)[] item) {
     if (str.length < item.length || item.length == 0) return -1;
     foreach_reverse (i; 0 .. str.length - item.length) {
-        if (equalsIgnoreCase(str[i .. i + item.length], item)) return cast(int) i;
+        if (str[i .. i + item.length].equalsIgnoreCase(item)) return cast(int) i;
     }
     return -1;
 }
 
 int findEndIgnoreCase(const(char)[] str, char item) {
     return findEndIgnoreCase(str, charToStr(item));
+}
+
+const(char)[] advance(const(char)[] str, size_t amount) {
+    if (str.length < amount) {
+        return str[$ .. $];
+    } else {
+        return str[amount .. $];
+    }
 }
 
 const(char)[] trimStart(const(char)[] str) {
@@ -281,6 +286,22 @@ const(char)[] trimEnd(const(char)[] str) {
 
 const(char)[] trim(const(char)[] str) {
     return str.trimStart().trimEnd();
+}
+
+const(char)[] removePrefix(const(char)[] str, const(char)[] prefix) {
+    if (str.startsWith(prefix)) {
+        return str[prefix.length .. $];
+    } else {
+        return str;
+    }
+}
+
+const(char)[] removeSuffix(const(char)[] str, const(char)[] suffix) {
+    if (str.endsWith(suffix)) {
+        return str[0 .. $ - suffix.length];
+    } else {
+        return str;
+    }
 }
 
 void copyStrChars(char[] str, const(char)[] source, size_t startIndex = 0) {
@@ -352,24 +373,20 @@ const(char)[] skipLine(ref inout(char)[] str) {
     return skipValue(str, '\n');
 }
 
-const(char)[] charToStr(char value) {
-    static char[1] buffer = void;
-    auto result = buffer[];
-
-    result[0] = value;
-    result = result[0 .. 1];
-    return result;
+const(char)[] boolToStr(bool value, bool isShort = false) {
+    if (isShort) {
+        return value ? "t" : "f";
+    } else {
+        return value ? "true" : "false";
+    }
 }
 
-const(char)[] boolToStr(bool value) {
-    static char[8] buffer = void;
+const(char)[] charToStr(char value) {
+    static char[1] buffer = void;
 
     auto result = buffer[];
-    if (value) {
-        result.copyStr("true");
-    } else {
-        result.copyStr("false");
-    }
+    result[0] = value;
+    result = result[0 .. 1];
     return result;
 }
 
@@ -409,23 +426,23 @@ const(char)[] signedToStr(long value) {
 const(char)[] doubleToStr(double value, uint precision = 2) {
     static char[64] buffer = void;
 
-    auto result = buffer[];
-    auto fractionalDigitCount = 0;
-    auto cleanNumber = value;
+    auto result = buffer[];        // You know what this is.
+    auto cleanNumber = value;      // Number that has all the digits on the left side.
+    auto fractionalDigitCount = 0; // Digit count on the right size.
     while (cleanNumber != cast(double) (cast(long) cleanNumber)) {
         fractionalDigitCount += 1;
         cleanNumber *= 10;
     }
-    
-    auto temp = signedToStr(cast(long) cleanNumber);
-    auto i = result.length;
 
-    if (temp.length <= fractionalDigitCount) {
-        i -= temp.length;
-        result.copyStrChars(temp, i);
-        if (temp.length < fractionalDigitCount) {
-            i -= fractionalDigitCount - temp.length;
-            result[i .. i + fractionalDigitCount - temp.length] = '0';
+    auto i = result.length; // We put the numbers in the buffer from right to left.
+    auto cleanNumberStr = signedToStr(cast(long) cleanNumber);
+    // TODO: Fix N.00 bug and make it more simple.
+    if (cleanNumberStr.length <= fractionalDigitCount) {
+        i -= cleanNumberStr.length;
+        result.copyStrChars(cleanNumberStr, i);
+        if (cleanNumberStr.length < fractionalDigitCount) {
+            i -= fractionalDigitCount - cleanNumberStr.length;
+            result[i .. i + fractionalDigitCount - cleanNumberStr.length] = '0';
         }
         i -= 2;
         result[i] = '0';
@@ -436,15 +453,15 @@ const(char)[] doubleToStr(double value, uint precision = 2) {
             result[i .. i + (precision == 0 ? 1 : precision)] = '0';
             i -= 1;
             result[i] = '.';
-            i -= temp.length;
-            result.copyStrChars(temp, i);
+            i -= cleanNumberStr.length;
+            result.copyStrChars(cleanNumberStr, i);
         } else {
             i -= fractionalDigitCount;
-            result.copyStrChars(temp[$ - fractionalDigitCount .. $], i);
+            result.copyStrChars(cleanNumberStr[$ - fractionalDigitCount .. $], i);
             i -= 1;
             result[i] = '.';
-            i -= (temp.length - fractionalDigitCount);
-            result.copyStrChars(temp[0 .. $ - fractionalDigitCount], i);
+            i -= (cleanNumberStr.length - fractionalDigitCount);
+            result.copyStrChars(cleanNumberStr[0 .. $ - fractionalDigitCount], i);
         }
     }
 
@@ -490,32 +507,32 @@ const(char)[] strzToStr(const(char)* value) {
 }
 
 const(char)[] toStr(T)(T value, ToStrOptions options = ToStrOptions()) {
-    static if (isChar!T) {
+    static if (isCharType!T) {
         return charToStr(value);
-    } else static if (isBool!T) {
-        return boolToStr(value);
-    } else static if (isUnsigned!T) {
+    } else static if (isBoolType!T) {
+        return boolToStr(value, options.boolIsShort);
+    } else static if (isUnsignedType!T) {
         return unsignedToStr(value);
-    } else static if (isSigned!T) {
+    } else static if (isSignedType!T) {
         return signedToStr(value);
-    } else static if (isDouble!T) {
+    } else static if (isDoubleType!T) {
         return doubleToStr(value, options.floatPrecision);
-    } else static if (isStr!T) {
+    } else static if (isStrType!T) {
         return value;
-    } else static if (isStrz!T) {
+    } else static if (isStrzType!T) {
         return strzToStr(value);
-    } else static if (isEnum!T) {
+    } else static if (isEnumType!T) {
         return enumToStr(value);
     } else {
-        static assert(0, "The 'toStr' function doesn't handle this type.");
+        static assert(0, "The 'toStr' function does not handle the '" ~ T.stringof ~ "' type.");
     }
 }
 
 ToValueResult!bool toBool(const(char)[] str) {
     auto result = ToValueResult!bool();
-    if (str == "true") {
+    if (str == "t" || str == "true") {
         result.value = true;
-    } else if (str == "false") {
+    } else if (str == "f" || str == "false") {
         result.value = false;
     } else {
         result.error = ToValueResultError.invalid;
@@ -541,7 +558,7 @@ ToValueResult!ulong toUnsigned(const(char)[] str) {
     } else {
         ulong level = 1;
         foreach_reverse (i, c; str) {
-            if (c < '0' || c > '9') {
+            if (!isDigit(c)) {
                 result.error = ToValueResultError.invalid;
                 break;
             }
@@ -553,8 +570,27 @@ ToValueResult!ulong toUnsigned(const(char)[] str) {
     return result;
 }
 
+ToValueResult!ulong toUnsigned(char c) {
+    auto result = ToValueResult!ulong();
+    if (isDigit(c)) {
+        result.value = c - '0';
+    } else {
+        result.error = ToValueResultError.invalid;
+    }
+    return result;
+}
+
 ulong toUnsignedWithNone(const(char)[] str) {
     auto conv = toUnsigned(str);
+    if (conv.error) {
+        return 0;
+    } else {
+        return conv.value;
+    }
+}
+
+ulong toUnsignedWithNone(char c) {
+    auto conv = toUnsigned(c);
     if (conv.error) {
         return 0;
     } else {
@@ -588,8 +624,28 @@ ToValueResult!long toSigned(const(char)[] str) {
     return result;
 }
 
+ToValueResult!long toSigned(char c) {
+    auto result = ToValueResult!long();
+    auto conv = toUnsigned(c);
+    if (conv.error) {
+        result.error = conv.error;
+    } else {
+        result.value = cast(long) conv.value;
+    }
+    return result;
+}
+
 long toSignedWithNone(const(char)[] str) {
     auto conv = toSigned(str);
+    if (conv.error) {
+        return 0;
+    } else {
+        return conv.value;
+    }
+}
+
+long toSignedWithNone(char c) {
+    auto conv = toSigned(c);
     if (conv.error) {
         return 0;
     } else {
@@ -623,7 +679,9 @@ ToValueResult!double toDouble(const(char)[] str) {
         }
     }
     if (!hasDot) {
-        result.error = ToValueResultError.invalid;
+        auto conv = toSigned(str);
+        result.value = conv.value;
+        result.error = conv.error;
     }
     return result;
 }
@@ -670,6 +728,43 @@ const(char)* toStrz(const(char)[] str) {
     return result.ptr;
 }
 
+const(char)[] fmt(A...)(const(char)[] str, A args) {
+    static char[1024][4] bufs = void;
+    static auto bufi = 0;
+
+    bufi = (bufi + 1) % bufs.length;
+    auto result = bufs[bufi][];
+    auto resi = 0;
+    auto stri = 0;
+    auto argi = 0;
+
+    while (stri < str.length) {
+        auto c1 = str[stri];
+        auto c2 = stri + 1 >= str.length ? '+' : str[stri + 1];
+        if (c1 == '{' && c2 == '}' && argi < args.length) {
+            static foreach (i, arg; args) {
+                if (i == argi) {
+                    auto temp = toStr(arg);
+                    foreach (i, c; temp) {
+                        result[resi + i] = c;
+                    }
+                    resi += temp.length;
+                    stri += 2;
+                    argi += 1;
+                    goto loopExit;
+                }
+            }
+            loopExit:
+        } else {
+            result[resi] = c1;
+            resi += 1;
+            stri += 1;
+        }
+    }
+    result = result[0 .. resi];
+    return result;
+}
+
 unittest {
     assert(isDigit("0123456789?") == false);
     assert(isDigit("0123456789") == true);
@@ -706,12 +801,20 @@ unittest {
     assert(str.findStartIgnoreCase("HELLO") == 0);
     assert(str.findEnd("HELLO") == -1);
     assert(str.findEndIgnoreCase("HELLO") == 6);
-    
+    assert(str.advance(0) == str);
+    assert(str.advance(1) == str[1 .. $]);
+    assert(str.advance(str.length) == "");
+    assert(str.advance(str.length + 1) == "");
+
     str = buffer[];
     str.copyStr(" Hello world. ");
     assert(str.trimStart() == "Hello world. ");
     assert(str.trimEnd() == " Hello world.");
     assert(str.trim() == "Hello world.");
+    assert(str.removePrefix("Hello") == str);
+    assert(str.trim().removePrefix("Hello") == " world.");
+    assert(str.removeSuffix("world.") == str);
+    assert(str.trim().removeSuffix("world.") == "Hello ");
 
     assert(pathConcat("one", "two").pathDir() == "one");
     assert(pathConcat("one").pathDir() == ".");
@@ -723,9 +826,7 @@ unittest {
     assert(skipValue(str, ',') == "three");
     assert(skipValue(str, ',') == "");
     assert(str.length == 0);
-}
 
-unittest {
     // TODO: I need to write more tests for toValue procedures.
     auto text1 = "1.0";
     auto conv1 = toDouble(text1);
@@ -734,6 +835,27 @@ unittest {
 
     auto text2 = "1";
     auto conv2 = toDouble(text2);
-    assert(conv2.value == 0.0);
-    assert(conv2.error == ToValueResultError.invalid);
+    assert(conv2.value == 1.0);
+    assert(conv2.error == ToValueResultError.none);
+
+    auto text3 = "1?";
+    auto conv3 = toDouble(text3);
+    assert(conv3.value == 0.0);
+    assert(conv3.error == ToValueResultError.invalid);
+
+    assert(fmt("") == "");
+    assert(fmt("{}") == "{}");
+    assert(fmt("{}", "1") == "1");
+    assert(fmt("{} {}", "1", "2") == "1 2");
+    assert(fmt("{} {} {}", "1", "2", "3") == "1 2 3");
+    assert(fmt("{} {} {}", 1, -2, 3.69) == "1 -2 3.69");
+    assert(fmt("{}", 420, 320, 220, 120, 20) == "420");
+    assert(fmt("", 1, -2, 3.69) == "");
+    assert(fmt("({})", fmt("({}, {})", false, true)) == "((false, true))");
+
+    // TODO: Uncoment when the N.00 bug is fixed.
+    // assert(fmt("{}", 0.00) == "0.00");
+    // assert(fmt("{}", 0.50) == "0.50");
+    // assert(fmt("{}", 1.00) == "1.00");
+    // assert(fmt("{}", 1.50) == "1.50");
 }

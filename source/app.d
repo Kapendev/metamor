@@ -21,7 +21,7 @@ enum BackgroundID {
 
 struct Actor {
     ActorID id;
-    Vector2 position;
+    Vec2 position;
 }
 
 struct Background {
@@ -83,9 +83,9 @@ void readyResources(const(char)[] exePath) {
 
     // Initialize actor box positions.
     auto y = resolution.y;
-    game.actorBoxes[0].position = Vector2(resolution.x * 0.275f, y);
-    game.actorBoxes[1].position = Vector2(resolution.x * 0.725f, y);
-    game.actorBoxes[2].position = Vector2(resolution.x * 0.500f, y);
+    game.actorBoxes[0].position = Vec2(resolution.x * 0.275f, y);
+    game.actorBoxes[1].position = Vec2(resolution.x * 0.725f, y);
+    game.actorBoxes[2].position = Vec2(resolution.x * 0.500f, y);
 
     // Load game files.
     const(char)[] filePath(const(char)[] path) {
@@ -100,7 +100,7 @@ void readyResources(const(char)[] exePath) {
     game.dialogue.update();
 
     // Change some default popka state.
-    popkaState.backgroundColor = backgroundColor;
+    changeBackgroundColor(gameColor);
 }
 
 void freeResources() {
@@ -114,7 +114,10 @@ void freeResources() {
     foreach (ref path; backgroundPaths) {
         path.free();
     }
-    game = Game();
+
+    // For some reason "game = Game();" does not work on dmd with betterC.
+    // But "game = Game.init" does.
+    game = Game.init;
 }
 
 void runCommand(const(char)[][] args) {
@@ -131,7 +134,7 @@ void runCommand(const(char)[][] args) {
                 assert(0, "Do something about the error case.");
             } else {
                 auto index = conv.value;
-                game.actorBoxes[index].id = toEnumWithNone!ActorID(actor);
+                game.actorBoxes[cast(size_t) index].id = toEnumWithNone!ActorID(actor);
             }
             break;
         }
@@ -145,7 +148,7 @@ void runCommand(const(char)[][] args) {
                 assert(0, "Do something about the error case.");
             } else {
                 auto index = conv.value;
-                game.actorBoxes[index].id = ActorID.none;
+                game.actorBoxes[cast(size_t) index].id = ActorID.none;
             }
             break;
         }
@@ -195,19 +198,19 @@ void updateDialogueScene() {
 }
 
 void drawDialogueScene() {
-    static backgroundOffset = Vector2();
-    static actorOffset = Vector2();
+    static backgroundOffset = Vec2();
+    static actorOffset = Vec2();
 
-    auto screenCenter = resolution * Vector2(0.5f);
-    auto offsetRate = (mousePosition - screenCenter) / screenCenter;
+    auto screenCenter = resolution * Vec2(0.5f);
+    auto offsetRate = (mouseScreenPosition - screenCenter) / screenCenter;
     backgroundOffset = backgroundOffset.moveTo(
-        Vector2(-maxBackgroundOffsetX, 0.0f) * offsetRate,
-        Vector2(deltaTime),
+        Vec2(-maxBackgroundOffsetX, 0.0f) * offsetRate,
+        Vec2(deltaTime),
         offsetSlowdown,
     );
     actorOffset = actorOffset.moveTo(
-        Vector2(-maxActorOffsetX, 0.0f) * offsetRate,
-        Vector2(deltaTime),
+        Vec2(-maxActorOffsetX, 0.0f) * offsetRate,
+        Vec2(deltaTime),
         offsetSlowdown,
     );
 
@@ -246,13 +249,13 @@ void drawDialogueScene() {
         }
         foreach (y; 0 .. ceil(resolution.y / transitionRectHeight)) {
             foreach (x; 0 .. ceil(resolution.x / transitionRectWidth)) {
-                auto rectangle = Rectangle(
+                auto rectangle = Rect(
                     x * transitionRectWidth,
                     y * transitionRectHeight,
                     transitionRectWidth * transitionValue,
                     transitionRectHeight * transitionValue
                 );
-                draw(rectangle, backgroundColor);
+                draw(rectangle, gameColor);
             }
         }
     }
@@ -278,9 +281,9 @@ void drawDialogueBox() {
     auto options = DrawOptions();
     options.hook = Hook.center;
 
-    auto position = resolution * Vector2(0.50f, 0.92f);
-    auto rectangle = Rectangle(position, Vector2(resolution.x, 16.0f));
-    rectangle = rectangle.rectangle(options.hook);
+    auto position = resolution * Vec2(0.50f, 0.92f);
+    auto rectangle = Rect(position, Vec2(resolution.x, 16.0f));
+    rectangle = rectangle.area(options.hook);
     rectangle.position.y += 1;
 
     draw(rectangle, backgroundColor);
@@ -304,7 +307,7 @@ void updateDialogueChoices() {
 
     auto maxTextWidth = 0.0f;
     foreach (choice; choices) {
-        auto textSize = measureText(game.font, choice);
+        auto textSize = measureTextSize(game.font, choice);
         if (maxTextWidth < textSize.x) {
             maxTextWidth = textSize.x;
         }
@@ -316,12 +319,12 @@ void updateDialogueChoices() {
             return;
         }
 
-        auto rectangle = Rectangle(
-            Vector2(resolution.x * 0.5f, startY + (optionRectOffset * i)),
-            Vector2(maxTextWidth + optionRectExtraWidth, optionRectHeight)
+        auto rectangle = Rect(
+            Vec2(resolution.x * 0.5f, startY + (optionRectOffset * i)),
+            Vec2(maxTextWidth + optionRectExtraWidth, optionRectHeight)
         );
-        auto mouseRect = Rectangle(mousePosition, cursorSize).rectangle(Hook.center);
-        auto centeredRect = rectangle.rectangle(Hook.center);
+        auto mouseRect = Rect(mouseScreenPosition, cursorSize).area(Hook.center);
+        auto centeredRect = rectangle.area(Hook.center);
         if (centeredRect.hasIntersection(mouseRect)) {
             if (Mouse.left.isReleased) {
                 game.dialogue.select(i);
@@ -342,7 +345,7 @@ void drawDialogueChoices() {
 
     auto maxTextWidth = 0.0f;
     foreach (choice; choices) {
-        auto textSize = measureText(game.font, choice);
+        auto textSize = measureTextSize(game.font, choice);
         if (maxTextWidth < textSize.x) {
             maxTextWidth = textSize.x;
         }
@@ -351,12 +354,12 @@ void drawDialogueChoices() {
     auto textOptions = DrawOptions();
     textOptions.hook = Hook.center;
     foreach (i, choice; choices) {
-        auto rectangle = Rectangle(
-            Vector2(resolution.x * 0.5f, startY + (optionRectOffset * i)),
-            Vector2(maxTextWidth + optionRectExtraWidth, optionRectHeight)
+        auto rectangle = Rect(
+            Vec2(resolution.x * 0.5f, startY + (optionRectOffset * i)),
+            Vec2(maxTextWidth + optionRectExtraWidth, optionRectHeight)
         );
-        auto mouseRect = Rectangle(mousePosition, cursorSize).rectangle(Hook.center);
-        auto centeredRect = rectangle.rectangle(Hook.center);
+        auto mouseRect = Rect(mouseScreenPosition, cursorSize).area(Hook.center);
+        auto centeredRect = rectangle.area(Hook.center);
         if (game.optionTimer > optionDelayTime && centeredRect.hasIntersection(mouseRect)) {
             draw(centeredRect, textColor);
             textOptions.color = textColor;
@@ -366,62 +369,65 @@ void drawDialogueChoices() {
         }
         centeredRect.subAll(1);
         draw(centeredRect, backgroundColor);
-        draw(game.font, choice, rectangle.position + Vector2(0.0f, -1.0f), textOptions);
+        draw(game.font, choice, centeredRect.center, textOptions);
     }
 }
 
 void drawCursor() {
     auto options = DrawOptions();
     options.hook = Hook.center;
-    draw(game.cursorSprite, cursorSize, Mouse.left.isDown, mousePosition, options);
+    draw(game.cursorSprite, cursorSize, Mouse.left.isDown, mouseScreenPosition, options);
 }
 
-void main(const(char)[][] args) {
+void gameLoop() {
+    if (Keyboard.f11.isPressed) {
+        toggleFullscreen();
+    }
+    if (Keyboard.esc.isPressed) {
+        closeWindow();
+    }
+    // Hide UI if needed.
+    if (Mouse.right.isReleased) {
+        game.isUIVisible = !game.isUIVisible;
+    }
+    // Update game.
+    game.music.update();
+    if (game.dialogue.hasText) {
+        updateDialogueScene();
+        if (game.isUIVisible) {
+            if (game.dialogue.hasChoices) {
+                updateDialogueChoices();
+            } else {
+                updateDialogueBox();
+            }
+        }
+    }
+    // Draw game.
+    if (game.dialogue.hasText) {
+        drawDialogueScene();
+        if (game.isUIVisible) {
+            drawDialogueBox();
+            drawDialogueChoices();
+        }
+    }
+    if (game.isUIVisible) {
+        drawCursor();
+    }
+}
+
+extern(C)
+void main(int argc, const(char)** argv) {
     openWindow(1280, 720);
     lockResolution(320, 180);
     hideCursor();
-    toggleFullscreen();
+    togglePixelPerfect();
 
-    readyResources(args[0]);
-    game.music.volume(0.2f);
+    auto appName = List!char(toStr(argv[0]));
+    readyResources(appName.items);
+    game.music.changeVolume(0.2f);
     game.music.play();
+    updateWindow!gameLoop();
 
-    while (isWindowOpen) {
-        // Define some buttons.
-        if (Keyboard.f11.isPressed) {
-            toggleFullscreen();
-        }
-        if (Keyboard.esc.isPressed) {
-            closeWindow();
-        }
-        // Hide UI if needed.
-        if (Mouse.right.isReleased) {
-            game.isUIVisible = !game.isUIVisible;
-        }
-        // Update game.
-        game.music.update();
-        if (game.dialogue.hasText) {
-            updateDialogueScene();
-            if (game.isUIVisible) {
-                if (game.dialogue.hasChoices) {
-                    updateDialogueChoices();
-                } else {
-                    updateDialogueBox();
-                }
-            }
-        }
-        // Draw game.
-        if (game.dialogue.hasText) {
-            drawDialogueScene();
-            if (game.isUIVisible) {
-                drawDialogueBox();
-                drawDialogueChoices();
-            }
-        }
-        if (game.isUIVisible) {
-            drawCursor();
-        }
-    }
     freeResources();
     freeWindow();
 }

@@ -1,7 +1,7 @@
 // Copyright 2024 Alexandros F. G. Kapretsos
 // SPDX-License-Identifier: MIT
 
-/// A collect-the-coins example.
+/// This example shows how to create a simple game with Popka.
 
 module popka.examples.coins;
 
@@ -10,26 +10,35 @@ import popka;
 @safe @nogc nothrow:
 
 void runCoinsExample() {
-    openWindow(640, 480);
+    openWindow(640, 360);
     lockResolution(320, 180);
 
     // The game variables.
-    auto player = Rectangle(resolution * Vector2(0.5), Vector2(16));
-    auto playerSpeed = Vector2(120);
-    auto coins = FlagList!Rectangle();
-    auto coinSize = Vector2(8);
+    auto player = Rect(resolution * 0.5, Vec2(16));
+    auto playerSpeed = Vec2(120);
+    auto coins = FlagList!Rect();
+    auto coinSize = Vec2(8);
     auto maxCoinCount = 8;
+
+    // Change the background color.
+    changeBackgroundColor(gray1);
 
     // Create the coins.
     foreach (i; 0 .. maxCoinCount) {
-        auto maxPosition = resolution - coinSize;
-        auto coin = Rectangle(randf * maxPosition.x, randf * maxPosition.y, coinSize.x, coinSize.y);
+        auto minPosition = Vec2(0, 40);
+        auto maxPosition = resolution - coinSize - minPosition;
+        auto coin = Rect(
+            randf * maxPosition.x + minPosition.x,
+            randf * maxPosition.y + minPosition.y,
+            coinSize.x,
+            coinSize.y
+        );
         coins.append(coin);
     }
 
     while (isWindowOpen) {
         // Move the player.
-        auto playerDirection = Vector2();
+        auto playerDirection = Vec2();
         if (Keyboard.left.isDown) {
             playerDirection.x = -1;
         }
@@ -42,7 +51,7 @@ void runCoinsExample() {
         if (Keyboard.down.isDown) {
             playerDirection.y = 1;
         }
-        player.position += playerDirection * playerSpeed * Vector2(deltaTime);
+        player.position += playerDirection * playerSpeed * deltaTime;
 
         // Check if the player is touching some coins and remove those coins.
         foreach (id; coins.ids) {
@@ -53,13 +62,13 @@ void runCoinsExample() {
 
         // Draw the game.
         foreach (coin; coins.items) {
-            draw(coin, lightGray);
+            draw(coin, gray2);
         }
-        draw(player, lightGray);
+        draw(player, gray2);
         if (coins.length == 0) {
             draw("You collected all the coins!");
         } else {
-            draw("Coins: {}/{}".fmt(maxCoinCount - coins.length, maxCoinCount));
+            draw("Coins: {}/{}\nMove with arrow keys.".fmt(maxCoinCount - coins.length, maxCoinCount));
         }
     }
     freeWindow();

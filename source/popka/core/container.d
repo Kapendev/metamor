@@ -5,7 +5,12 @@
 
 module popka.core.container;
 
-import lib = core.stdc.stdlib;
+private {
+    @system @nogc nothrow extern(C):
+
+    void* realloc(void* ptr, size_t size);
+    void free(void* ptr);
+}
 
 @safe @nogc nothrow:
 
@@ -79,7 +84,7 @@ struct List(T) {
             size_t newLength = length + 1;
             if (newLength > capacity) {
                 capacity = findListCapacity(newLength);
-                items = (cast(T*) lib.realloc(items.ptr, capacity * T.sizeof))[0 .. newLength];
+                items = (cast(T*) realloc(items.ptr, capacity * T.sizeof))[0 .. newLength];
             } else {
                 items = items.ptr[0 .. newLength];
             }
@@ -93,9 +98,13 @@ struct List(T) {
     }
 
     T pop() {
-        T temp = items[$ - 1];
-        remove(length - 1);
-        return temp;
+        if (length > 0) {
+            T temp = items[$ - 1];
+            remove(length - 1);
+            return temp;
+        } else {
+            return T.init;
+        }
     }
 
     void resize(size_t length) {
@@ -121,7 +130,7 @@ struct List(T) {
     @trusted
     void free() {
         if (items.ptr != null) {
-            lib.free(items.ptr);
+            .free(items.ptr);
             items = [];
             capacity = 0;
         }
@@ -331,7 +340,7 @@ struct Grid(T) {
     size_t rowCount;
     size_t colCount;
 
-@safe @nogc nothrow:
+    @safe @nogc nothrow:
 
     this(size_t rowCount, size_t colCount) {
         resize(rowCount, colCount);
