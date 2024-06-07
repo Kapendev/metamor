@@ -375,12 +375,17 @@ void drawCursor() {
 }
 
 bool gameLoop() {
-    if (Keyboard.f11.isPressed) {
-        toggleFullscreen();
+    version(WebAssembly) {
+
+    } else {
+        if (Keyboard.f11.isPressed) {
+            toggleFullscreen();
+        }
+        if (Keyboard.esc.isPressed) {
+            return true;
+        }
     }
-    if (Keyboard.esc.isPressed) {
-        return true;
-    }
+
     // Hide UI if needed.
     if (Mouse.right.isReleased) {
         game.isUIVisible = !game.isUIVisible;

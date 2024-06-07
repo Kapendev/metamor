@@ -31,6 +31,16 @@
             animation: spin 2s linear infinite;
         }
 
+        .center {
+            position: fixed;
+            inset: 0px;
+            width: 12rem;
+            height: 5rem;
+            max-width: 100vw;
+            max-height: 100dvh;
+            margin: auto;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -42,8 +52,10 @@
     </style>
 </head>
 <body>
-    <div id="loading">
-        <div class="spinner"></div>
+    <div class="center">
+        <div id="loading">
+            <div class="spinner"></div>
+        </div>
     </div>
     <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
     <p id="output" />
