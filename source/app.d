@@ -364,7 +364,7 @@ void drawDialogueChoices() {
         }
         centeredRect.subAll(1);
         draw(centeredRect, backgroundColor);
-        draw(game.font, choice, centeredRect.center, textOptions);
+        draw(game.font, choice, centeredRect.centerPoint, textOptions);
     }
 }
 
@@ -374,12 +374,12 @@ void drawCursor() {
     draw(game.cursorSprite, cursorSize, Mouse.left.isDown, mouseScreenPosition, options);
 }
 
-void gameLoop() {
+bool gameLoop() {
     if (Keyboard.f11.isPressed) {
         toggleFullscreen();
     }
     if (Keyboard.esc.isPressed) {
-        closeWindow();
+        return true;
     }
     // Hide UI if needed.
     if (Mouse.right.isReleased) {
@@ -408,21 +408,22 @@ void gameLoop() {
     if (game.isUIVisible) {
         drawCursor();
     }
+    return false;
 }
 
-void gameMain(const(char)[] path) {
+void gameStart(const(char)[] path) {
     openWindow(1280, 720);
     lockResolution(320, 180);
     hideCursor();
     togglePixelPerfect();
 
-    readyResources(path);
+    readyResources(pathDir(path));
     game.music.changeVolume(0.2f);
     game.music.play();
     updateWindow!gameLoop();
 
     freeResources();
-    freeWindow();
+    closeWindow();
 }
 
-mixin addGameMain!(gameMain);
+mixin addGameStart!gameStart;
