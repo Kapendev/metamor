@@ -87,7 +87,7 @@ void readyResources() {
     game.font.spacing = pixeloadFontSpacing;
     game.actorAtlas.load("actor_atlas.png");
     game.cursorSprite.load("cursor.png");
-    game.dialogue.load(pathConcat(assetsDir, "dialogue.txt")); // TODO: Fix that in Poka!!!
+    game.dialogue.load("dialogue.txt"); // TODO: Fix that in Poka!!!
     game.music.load("stop_for_a_moment.ogg");
     game.dialogue.update();
 
