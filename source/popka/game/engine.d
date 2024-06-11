@@ -132,13 +132,11 @@ enum Gamepad {
     middle = ray.GAMEPAD_BUTTON_MIDDLE,
 }
 
-alias GameLoopFunc = bool function();
-alias GameStartFunc = void function(const(char)[] path);
-
 struct EngineState {
     Color backgroundColor = defaultBackgroundColor;
     float timeRate = 1.0f;
-    
+    const(char)[] assetsDir;
+
     bool isUpdating;
     bool isFPSLocked;
     bool isCursorHidden;
@@ -192,7 +190,7 @@ struct Sprite {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadTexture(toStrz(path));
+            data = ray.LoadTexture(pathConcat(assetsDir, path).toStrz);
         }
     }
 
@@ -271,7 +269,7 @@ struct Font {
     void load(const(char)[] path, uint size, const(dchar)[] runes = []) {
         free();
         if (path.length != 0) {
-            data = ray.LoadFontEx(toStrz(path), size, cast(int*) runes.ptr, cast(int) runes.length);
+            data = ray.LoadFontEx(pathConcat(assetsDir, path).toStrz, size, cast(int*) runes.ptr, cast(int) runes.length);
         }
     }
 
@@ -319,7 +317,7 @@ struct Sound {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadSound(toStrz(path));
+            data = ray.LoadSound(pathConcat(assetsDir, path).toStrz);
         }
     }
 
@@ -371,7 +369,7 @@ struct Music {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadMusicStream(toStrz(path));
+            data = ray.LoadMusicStream(pathConcat(assetsDir, path).toStrz);
         }
     }
 
@@ -480,7 +478,7 @@ struct TileMap {
             return;
         }
 
-        auto file = readText(path);
+        auto file = readText(pathConcat(assetsDir, path));
         auto view = file.items;
         auto newRowCount = 0;
         auto newColCount = 0;
@@ -808,6 +806,10 @@ void showCursor() {
     engineState.isCursorHidden = false;
 }
 
+const(char)[] assetsDir() {
+    return engineState.assetsDir;
+}
+
 bool isFullscreen() {
     return ray.IsWindowFullscreen;
 }
@@ -856,12 +858,13 @@ Vec2 mouseScreenPosition() {
         auto window = windowSize;
         auto minRatio = min(window.x / engineState.viewport.size.x, window.y / engineState.viewport.size.y);
         auto targetSize = engineState.viewport.size * Vec2(minRatio);
+        // We use touch because it works on desktop, web and phones.
         return Vec2(
-            (ray.GetMouseX() - (window.x - targetSize.x) * 0.5f) / minRatio,
-            (ray.GetMouseY() - (window.y - targetSize.y) * 0.5f) / minRatio,
+            (ray.GetTouchX() - (window.x - targetSize.x) * 0.5f) / minRatio,
+            (ray.GetTouchY() - (window.y - targetSize.y) * 0.5f) / minRatio,
         );
     } else {
-        return Vec2(ray.GetMouseX(), ray.GetMouseY());
+        return Vec2(ray.GetTouchX(), ray.GetTouchY());
     }
 }
 
@@ -1033,6 +1036,14 @@ void draw(Rect rect, Color color = white) {
     }
 }
 
+void draw(Vec2 point, Vec2 size, Color color = white) {
+    draw(Rect(point, size).centerArea, color);
+}
+
+void draw(Vec2 point, Color color = white) {
+    draw(Rect(point, Vec2(8)).centerArea, color);
+}
+
 void draw(Circ circ, Color color = white) {
     ray.DrawCircleV(toRay(circ.position), circ.radius, toRay(color));
 }
@@ -1091,6 +1102,14 @@ void draw(Sprite sprite, Rect area, Vec2 position, DrawOptions options = DrawOpt
 
 void draw(Sprite sprite, Vec2 position, DrawOptions options = DrawOptions()) {
     draw(sprite, Rect(), position, options);
+}
+
+void draw(Sprite sprite, Rect area, DrawOptions options = DrawOptions()) {
+    draw(sprite, area, Vec2(), options);
+}
+
+void draw(Sprite sprite, DrawOptions options = DrawOptions()) {
+    draw(sprite, Rect(), Vec2(), options);
 }
 
 void draw(Sprite sprite, Vec2 tileSize, uint tileID, Vec2 position, DrawOptions options = DrawOptions()) {
@@ -1230,7 +1249,7 @@ void draw(const(char)[] text, Vec2 position, DrawOptions options) {
     draw(rayFont, text, position, options);
 }
 
-mixin template addGameStart(alias startFunc) {
+mixin template addGameStart(alias startFunc, Vec2 size, const(char)[] title = "Popka") {
     version (D_BetterC) {
         extern(C)
         void main(int argc, immutable(char)** argv) {
@@ -1242,11 +1261,29 @@ mixin template addGameStart(alias startFunc) {
                 }
                 return strz[0 .. length];
             }
-            startFunc(__helper(argv[0]));
+            auto path = List!char(pathDir(__helper(argv[0])));
+            path.append(pathSeparator);
+            path.append("assets");
+            engineState.assetsDir = path.items;
+            openWindow(size);
+            startFunc();
+            closeWindow();
+            path.free();
         }
     } else {
         void main(string[] args) {
-            startFunc(args[0]);
+            auto path = List!char(pathDir(args[0]));
+            path.append(pathSeparator);
+            path.append("assets");
+            engineState.assetsDir = path.items;
+            openWindow(size);
+            startFunc();
+            closeWindow();
+            path.free();
         }
     }
+}
+
+mixin template addGameStart(alias startFunc, float width, float height, const(char)[] title = "Popka") {
+    mixin addGameStart!(startFunc, Vec2(width, height), title);
 }

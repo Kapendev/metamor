@@ -49,7 +49,7 @@ struct Game {
     bool isUIVisible = true;
 }
 
-void readyResources(const(char)[] exeDirPath) {
+void readyResources() {
     // Initialize tile ids.
     actorTileIDs[ActorID.none] = 0;
     actorTileIDs[ActorID.chloe] = 0;
@@ -65,7 +65,7 @@ void readyResources(const(char)[] exeDirPath) {
     // Initialize background paths.
     void makePathForBackground(BackgroundID id, const(char)[] path) {
         backgroundPaths[id].clear();
-        backgroundPaths[id].append(pathConcat(exeDirPath, "assets", path));
+        backgroundPaths[id].append(path);
     }
     makePathForBackground(BackgroundID.none, "none_atlas.png");
     makePathForBackground(BackgroundID.room, "room_atlas.png");
@@ -83,15 +83,12 @@ void readyResources(const(char)[] exeDirPath) {
     game.actorBoxes[2].position = Vec2(resolution.x * 0.500f, y);
 
     // Load game files.
-    const(char)[] filePath(const(char)[] path) {
-        return pathConcat(exeDirPath, "assets", path);
-    }
-    game.font.load(filePath("pixeloid_sans.ttf"), 11, pixeloidFontRunes);
+    game.font.load("pixeloid_sans.ttf", 11, pixeloidFontRunes);
     game.font.spacing = pixeloadFontSpacing;
-    game.actorAtlas.load(filePath("actor_atlas.png"));
-    game.cursorSprite.load(filePath("cursor.png"));
-    game.dialogue.load(filePath("dialogue.txt"));
-    game.music.load(filePath("stop_for_a_moment.ogg"));
+    game.actorAtlas.load("actor_atlas.png");
+    game.cursorSprite.load("cursor.png");
+    game.dialogue.load(pathConcat(assetsDir, "dialogue.txt")); // TODO: Fix that in Poka!!!
+    game.music.load("stop_for_a_moment.ogg");
     game.dialogue.update();
 
     // Change some default popka state.
@@ -384,12 +381,12 @@ bool gameLoop() {
         if (Keyboard.esc.isPressed) {
             return true;
         }
+        // Hide UI if needed.
+        if (Mouse.right.isReleased) {
+            game.isUIVisible = !game.isUIVisible;
+        }
     }
 
-    // Hide UI if needed.
-    if (Mouse.right.isReleased) {
-        game.isUIVisible = !game.isUIVisible;
-    }
     // Update game.
     game.music.update();
     if (game.dialogue.hasText) {
@@ -416,19 +413,16 @@ bool gameLoop() {
     return false;
 }
 
-void gameStart(const(char)[] path) {
-    openWindow(1280, 720);
+void gameStart() {
     lockResolution(320, 180);
     hideCursor();
     togglePixelPerfect();
 
-    readyResources(pathDir(path));
+    readyResources();
     game.music.changeVolume(0.2f);
     game.music.play();
     updateWindow!gameLoop();
-
     freeResources();
-    closeWindow();
 }
 
-mixin addGameStart!gameStart;
+mixin addGameStart!(gameStart, 1280, 720);

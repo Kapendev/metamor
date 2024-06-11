@@ -74,17 +74,17 @@ alias drawTexture = DrawTextureNPatch;
 // Text drawing functions
 alias drawFPS = DrawFPS;
 
-@nogc nothrow
+@trusted @nogc nothrow
 void drawText(const(char)[] text, float posX, float posY, float fontSize, Color color) {
     drawText(GetFontDefault(), text, Vector2(posX, posY), Vector2(0.0f, 0.0f), 0.0f, fontSize, 2.0f, color);
 }
 
-@nogc nothrow
+@trusted @nogc nothrow
 void drawText(Font font, const(char)[] text, Vector2 position, float fontSize, float spacing, Color tint) {
     drawText(font, text, position, Vector2(0.0f, 0.0f), 0.0f, fontSize, spacing, tint);
 }
 
-@nogc nothrow
+@trusted @nogc nothrow
 void drawText(Font font, const(char)[] text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, Color tint) {
     static char[1024] buffer = void;
     auto text2 = buffer[];
@@ -97,17 +97,17 @@ void drawText(Font font, const(char)[] text, Vector2 position, Vector2 origin, f
 
 alias drawText = DrawTextCodepoint;
 
-@nogc nothrow
+@trusted @nogc nothrow
 void drawText(Font font, const(int)[] codepoints, Vector2 position, float fontSize, float spacing, Color tint) {
     DrawTextCodepoints(font, codepoints.ptr, cast(int) codepoints.length, position, fontSize, spacing, tint);
 }
 
-@nogc nothrow
+@trusted @nogc nothrow
 float measureText(const(char)[] text, float fontSize) {
     return measureText(GetFontDefault(), text, fontSize, 2.0f).x;
 }
 
-@nogc nothrow
+@trusted @nogc nothrow
 Vector2 measureText(Font font, const(char)[] text, float fontSize, float spacing) {
     static char[1024] buffer = void;
     auto text2 = buffer[];
@@ -162,16 +162,6 @@ alias drawBillboard = DrawBillboardPro;
 alias drawMesh = DrawMesh;
 alias drawMeshInstanced = DrawMeshInstanced;
 
-version (WebAssembly) {
-    @nogc nothrow extern(C)
-    void emscripten_set_main_loop(void* ptr, int fps, int loop);
-    @nogc nothrow extern(C)
-    void emscripten_cancel_main_loop();
-}
-
-// We intentionally leave attributes out to provide maximum flexibility for any use case.
-// The given function should return a bool value.
-// A return value of true will exit the loop, while false will allow it to continue.
 void updateWindow(alias loopFunc)() {
     version(WebAssembly) {
         static void __loopFunc() {
@@ -206,4 +196,11 @@ mixin template addRayStart(alias startFunc) {
             startFunc(args[0]);
         }
     }
+}
+
+version (WebAssembly) {
+    @nogc nothrow extern(C)
+    void emscripten_set_main_loop(void* ptr, int fps, int loop);
+    @nogc nothrow extern(C)
+    void emscripten_cancel_main_loop();
 }
