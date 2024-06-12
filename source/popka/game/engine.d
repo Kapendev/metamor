@@ -135,7 +135,8 @@ enum Gamepad {
 struct EngineState {
     Color backgroundColor = defaultBackgroundColor;
     float timeRate = 1.0f;
-    const(char)[] assetsDir;
+    List!char assetsDir;
+    List!char tempText;
 
     bool isUpdating;
     bool isFPSLocked;
@@ -190,7 +191,7 @@ struct Sprite {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadTexture(pathConcat(assetsDir, path).toStrz);
+            data = ray.LoadTexture(path.toAssetsPath.toStrz);
         }
     }
 
@@ -269,7 +270,7 @@ struct Font {
     void load(const(char)[] path, uint size, const(dchar)[] runes = []) {
         free();
         if (path.length != 0) {
-            data = ray.LoadFontEx(pathConcat(assetsDir, path).toStrz, size, cast(int*) runes.ptr, cast(int) runes.length);
+            data = ray.LoadFontEx(path.toAssetsPath.toStrz, size, cast(int*) runes.ptr, cast(int) runes.length);
         }
     }
 
@@ -317,7 +318,7 @@ struct Sound {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadSound(pathConcat(assetsDir, path).toStrz);
+            data = ray.LoadSound(path.toAssetsPath.toStrz);
         }
     }
 
@@ -369,7 +370,7 @@ struct Music {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            data = ray.LoadMusicStream(pathConcat(assetsDir, path).toStrz);
+            data = ray.LoadMusicStream(path.toAssetsPath.toStrz);
         }
     }
 
@@ -507,51 +508,101 @@ struct TileMap {
     void load(const(char)[] path) {
         free();
         if (path.length != 0) {
-            auto file = readText(pathConcat(assetsDir, path));
-            parse(file.items);
-            file.free();
+            parse(loadTempText(path));
         }
     }
 }
 
+void loadText(const(char)[] path, ref List!char text) {
+    readText(path.toAssetsPath, text);
+}
+
+List!char loadText(const(char)[] path) {
+    return readText(path.toAssetsPath);
+}
+
+const(char)[] loadTempText(const(char)[] path) {
+    loadText(path, engineState.tempText);
+    return engineState.tempText.items;
+}
+
+void saveText(const(char)[] path, List!char content) {
+    writeText(path.toAssetsPath, content);
+}
+
+void loadConfig(A...)(const(char)[] path, ref A args) {
+    readConfig(path.toAssetsPath, args);
+}
+
+const(char)[] toAssetsPath(const(char)[] path) {
+    static char[1024] buffer = void;
+
+    if (path.length == 0) {
+        return assetsDir;
+    }
+
+    auto result = buffer[];
+    result.copyStrChars(assetsDir);
+    result[assetsDir.length] = pathSeparator;
+    foreach (i, c; path) {
+        auto ii = i + assetsDir.length + 1;
+        if (c == otherPathSeparator) {
+            result[ii] = pathSeparator;
+        } else {
+            result[ii] = c;
+        }
+    }
+    result = result[0 .. assetsDir.length + 1 + path.length];
+    return result;
+}
+
+/// Converts a raylib color to a Popka color.
 Color toPopka(ray.Color from) {
     return Color(from.r, from.g, from.b, from.a);
 }
 
+/// Converts a raylib vector to a Popka vector.
 Vec2 toPopka(ray.Vector2 from) {
     return Vec2(from.x, from.y);
 }
 
+/// Converts a raylib vector to a Popka vector.
 Vec3 toPopka(ray.Vector3 from) {
     return Vec3(from.x, from.y, from.z);
 }
 
+/// Converts a raylib vector to a Popka vector.
 Vec4 toPopka(ray.Vector4 from) {
     return Vec4(from.x, from.y, from.z, from.w);
 }
 
+/// Converts a raylib rectangle to a Popka rectangle.
 Rect toPopka(ray.Rectangle from) {
     return Rect(from.x, from.y, from.width, from.height);
 }
 
+/// Converts a raylib texture to a Popka sprite.
 Sprite toPopka(ray.Texture2D from) {
     Sprite result;
     result.data = from;
     return result;
 }
 
+/// Converts a raylib font to a Popka font.
 Font toPopka(ray.Font from) {
     Font result;
     result.data = from;
     return result;
 }
 
+/// Converts a raylib render texture to a Popka viewport.
 Viewport toPopka(ray.RenderTexture2D from) {
     Viewport result;
     result.data = from;
     return result;
 }
 
+/// Converts a raylib camera to a Popka camera.
 Camera toPopka(ray.Camera2D from) {
     Camera result;
     result.position = toPopka(from.target);
@@ -560,42 +611,52 @@ Camera toPopka(ray.Camera2D from) {
     return result;
 }
 
+/// Converts a Popka color to a raylib color.
 ray.Color toRay(Color from) {
     return ray.Color(from.r, from.g, from.b, from.a);
 }
 
+/// Converts a Popka vector to a raylib vector.
 ray.Vector2 toRay(Vec2 from) {
     return ray.Vector2(from.x, from.y);
 }
 
+/// Converts a Popka vector to a raylib vector.
 ray.Vector3 toRay(Vec3 from) {
     return ray.Vector3(from.x, from.y, from.z);
 }
 
+/// Converts a Popka vector to a raylib vector.
 ray.Vector4 toRay(Vec4 from) {
     return ray.Vector4(from.x, from.y, from.z, from.w);
 }
 
+/// Converts a Popka rectangle to a raylib rectangle.
 ray.Rectangle toRay(Rect from) {
     return ray.Rectangle(from.position.x, from.position.y, from.size.x, from.size.y);
 }
 
+/// Converts a Popka sprite to a raylib texture.
 ray.Texture2D toRay(Sprite from) {
     return from.data;
 }
 
+/// Converts a Popka font to a raylib font.
 ray.Font toRay(Font from) {
     return from.data;
 }
 
+/// Converts a Popka viewport to a raylib render texture.
 ray.RenderTexture2D toRay(Viewport from) {
     return from.data;
 }
 
+/// Converts a Popka camera to a raylib camera.
 ray.Camera2D toRay(Camera from) {
     return ray.Camera2D(toRay(from.origin), toRay(from.position), from.rotation, from.scale);
 }
 
+/// Converts a Popka filter to a raylib filter.
 int toRay(Filter filter) {
     final switch (filter) {
         case Filter.nearest: return ray.TEXTURE_FILTER_POINT;
@@ -603,6 +664,9 @@ int toRay(Filter filter) {
     }
 }
 
+/// Returns the opposite flip value.
+/// The opposite of every flip value except none is none.
+/// The fallback value is returned if the flip value is none.
 Flip opposite(Flip flip, Flip fallback) {
     if (flip == fallback) {
         return Flip.none;
@@ -611,18 +675,22 @@ Flip opposite(Flip flip, Flip fallback) {
     }
 }
 
+/// Returns a random int between 0 and int.max (inclusive).
 int randi() {
     return ray.GetRandomValue(0, int.max);
 }
 
+/// Returns a random float between 0.0f and 1.0f (inclusive).
 float randf() {
     return ray.GetRandomValue(0, cast(int) float.max) / cast(float) cast(int) float.max;
 }
 
+/// Sets the seed for the random number generator to something specific.
 void randomize(uint seed) {
     ray.SetRandomSeed(seed);
 }
 
+/// Randomizes the seed of the random number generator.
 void randomize() {
     randomize(randi);
 }
@@ -642,6 +710,9 @@ Font rayFont() {
 }
 
 void openWindow(Vec2 size, const(char)[] title = "Popka", Color color = defaultBackgroundColor) {
+    if (ray.IsWindowReady) {
+        return;
+    }
     ray.SetConfigFlags(ray.FLAG_VSYNC_HINT | ray.FLAG_WINDOW_RESIZABLE);
     ray.SetTraceLogLevel(ray.LOG_ERROR);
     ray.InitWindow(cast(int) size.x, cast(int) size.y, toStrz(title));
@@ -748,6 +819,9 @@ void updateWindow(alias loopFunc)() {
 }
 
 void closeWindow() {
+    if (!ray.IsWindowReady) {
+        return;
+    }
     engineState.viewport.free();
     ray.CloseAudioDevice();
     ray.CloseWindow();
@@ -810,7 +884,7 @@ void showCursor() {
 }
 
 const(char)[] assetsDir() {
-    return engineState.assetsDir;
+    return engineState.assetsDir.items;
 }
 
 bool isFullscreen() {
@@ -1031,14 +1105,6 @@ Vec2 wasd() {
     return result;
 }
 
-void draw(Rect rect, Color color = white) {
-    if (isPixelPerfect) {
-        ray.DrawRectanglePro(toRay(rect.floor()), ray.Vector2(0.0f, 0.0f), 0.0f, toRay(color));
-    } else {
-        ray.DrawRectanglePro(toRay(rect), ray.Vector2(0.0f, 0.0f), 0.0f, toRay(color));
-    }
-}
-
 void draw(Vec2 point, Vec2 size, Color color = white) {
     draw(Rect(point, size).centerArea, color);
 }
@@ -1047,8 +1113,16 @@ void draw(Vec2 point, Color color = white) {
     draw(Rect(point, Vec2(8)).centerArea, color);
 }
 
-void draw(Circ circ, Color color = white) {
-    ray.DrawCircleV(toRay(circ.position), circ.radius, toRay(color));
+void draw(Rect area, Color color = white) {
+    if (isPixelPerfect) {
+        ray.DrawRectanglePro(toRay(area.floor()), ray.Vector2(0.0f, 0.0f), 0.0f, toRay(color));
+    } else {
+        ray.DrawRectanglePro(toRay(area), ray.Vector2(0.0f, 0.0f), 0.0f, toRay(color));
+    }
+}
+
+void draw(Circ area, Color color = white) {
+    ray.DrawCircleV(toRay(area.position), area.radius, toRay(color));
 }
 
 void draw(Sprite sprite, Rect area, Vec2 position, DrawOptions options = DrawOptions()) {
@@ -1103,12 +1177,12 @@ void draw(Sprite sprite, Rect area, Vec2 position, DrawOptions options = DrawOpt
     }
 }
 
-void draw(Sprite sprite, Vec2 position, DrawOptions options = DrawOptions()) {
-    draw(sprite, Rect(), position, options);
-}
-
 void draw(Sprite sprite, Rect area, DrawOptions options = DrawOptions()) {
     draw(sprite, area, Vec2(), options);
+}
+
+void draw(Sprite sprite, Vec2 position, DrawOptions options = DrawOptions()) {
+    draw(sprite, Rect(), position, options);
 }
 
 void draw(Sprite sprite, DrawOptions options = DrawOptions()) {
@@ -1246,13 +1320,13 @@ void draw(Font font, const(char)[] text, Vec2 position, DrawOptions options = Dr
     ray.rlPopMatrix();
 }
 
-void draw(const(char)[] text, Vec2 position = Vec2(8.0f, 8.0f)) {
-    auto options = DrawOptions();
-    options.color = gray2;
+void draw(const(char)[] text, Vec2 position, DrawOptions options) {
     draw(rayFont, text, position, options);
 }
 
-void draw(const(char)[] text, Vec2 position, DrawOptions options) {
+void draw(const(char)[] text, Vec2 position = Vec2(8.0f, 8.0f)) {
+    auto options = DrawOptions();
+    options.color = gray2;
     draw(rayFont, text, position, options);
 }
 
@@ -1268,25 +1342,23 @@ mixin template addGameStart(alias startFunc, Vec2 size, const(char)[] title = "P
                 }
                 return strz[0 .. length];
             }
-            auto path = List!char(pathDir(__helper(argv[0])));
-            path.append(pathSeparator);
-            path.append("assets");
-            engineState.assetsDir = path.items;
+            engineState.assetsDir.append(pathDir(__helper(argv[0])));
+            engineState.assetsDir.append(pathSeparator);
+            engineState.assetsDir.append("assets");
             openWindow(size);
             startFunc();
             closeWindow();
-            path.free();
+            engineState.assetsDir.free();
         }
     } else {
         void main(string[] args) {
-            auto path = List!char(pathDir(args[0]));
-            path.append(pathSeparator);
-            path.append("assets");
-            engineState.assetsDir = path.items;
+            engineState.assetsDir.append(pathDir(args[0]));
+            engineState.assetsDir.append(pathSeparator);
+            engineState.assetsDir.append("assets");
             openWindow(size);
             startFunc();
             closeWindow();
-            path.free();
+            engineState.assetsDir.free();
         }
     }
 }
