@@ -4,10 +4,12 @@ A cute and short visual novel about looking at an egg.
 What is inside the egg?
 Is it a chick? A dragon? Maybe both? The possibilities are endless.
 
-You can compile the game with:
+This game was created with [Parin](https://github.com/Kapendev/parin).
+To play, run:
 
-```bash
-dub build
+```sh
+dub run parin:setup
+dub run
 ```
 
 ## License

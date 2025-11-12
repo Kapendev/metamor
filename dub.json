@@ -1,58 +1,22 @@
 {
-	"name" : "metamor",
-	"description" : "A cute visual novel made with the D programming language.",
-	"authors" : ["Alexandros F. G. Kapretsos"],
-	"copyright" : "Copyright © 2024, Alexandros F. G. Kapretsos",
-	"license" : "MIT",
-	"dependencies" : {},
-	"configurations": [
-		{
-			"name": "linux_app",
-			"targetType": "executable",
-			"platforms": [
-				"linux"
-			],
-			"dflags": ["-betterC"],
-			"libs": [
-				"raylib",
-				"GL",
-				"m",
-				"pthread",
-				"dl",
-				"rt",
-				"X11"
-			],
-			"lflags": [
-				"-L.",
-				"-rpath=$$ORIGIN"
-			]
-		},
-		{
-			"name": "windows_app",
-			"targetType": "executable",
-			"platforms": [
-				"windows"
-			],
-			"dflags": ["-betterC"],
-			"libs": [
-				"raylibdll"
-			]
-		},
-		{
-			"name": "macos_app",
-			"targetType": "executable",
-			"platforms": [
-				"osx"
-			],
-			"dflags": ["-betterC"],
-			"libs": [
-				"raylib.500"
-			],
-			"lflags": [
-				"-L.",
-				"-rpath",
-				"@executable_path/"
-			]
-		}
-	]
+    "authors" : ["Nameeeee"],
+    "copyright" : "Copyright © 2025, Name",
+    "description" : "A game made with Parin.",
+    "license" : "proprietary",
+    "name" : "game",
+    "dependencies": {
+        "parin": "~main"
+    },
+    "configurations": [
+        {
+            "name": "default",
+            "targetType": "executable"
+        },
+        {
+            "name": "wasm",
+            "targetType": "library",
+            "targetName": "game_wasm",
+            "dflags": ["-mtriple=wasm32-unknown-unknown-wasm", "-checkaction=halt", "-i", "--release", "-betterC"]
+        }
+    ]
 }
